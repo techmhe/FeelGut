@@ -261,16 +261,33 @@
 
         // Load entries from localStorage on page load
         function loadEntries() {
-            const stored = localStorage.getItem('feelgut_entries');
-            if (stored) {
-                entries = JSON.parse(stored);
+            try {
+                const stored = localStorage.getItem('feelgut_entries');
+                if (stored) {
+                    entries = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.error('Error loading entries from localStorage:', error);
+                entries = [];
             }
             displayEntries();
         }
 
         // Save entries to localStorage
         function saveEntries() {
-            localStorage.setItem('feelgut_entries', JSON.stringify(entries));
+            try {
+                localStorage.setItem('feelgut_entries', JSON.stringify(entries));
+            } catch (error) {
+                console.error('Error saving entries to localStorage:', error);
+                alert('Unable to save data. Your browser storage may be full or disabled.');
+            }
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Format date for display
@@ -315,14 +332,22 @@
                 <div class="entry ${entry.type}">
                     <div class="entry-header">
                         <div>
-                            <span class="entry-type ${entry.type}">${entry.type}</span>
+                            <span class="entry-type ${entry.type}">${escapeHtml(entry.type)}</span>
                             <span class="entry-date">${formatDate(entry.dateTime)}</span>
                         </div>
-                        <button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                        <button class="delete-btn" data-entry-id="${entry.id}">Delete</button>
                     </div>
-                    <div class="entry-description">${entry.description}</div>
+                    <div class="entry-description">${escapeHtml(entry.description)}</div>
                 </div>
             `).join('');
+            
+            // Attach event listeners to delete buttons
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const entryId = parseInt(this.dataset.entryId);
+                    deleteEntry(entryId);
+                });
+            });
         }
 
         // Add new entry
@@ -347,8 +372,8 @@
             // Reset form
             this.reset();
             
-            // Show success message (optional)
-            alert('Entry added successfully!');
+            // Set default date/time again
+            setDefaultDateTime();
         });
 
         // Delete entry
