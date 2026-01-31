@@ -1,0 +1,17 @@
+{
+  "symptoms": [
+    { "id": "stomach_pain", "en": "Stomach pain", "de": "Magenschmerzen" },
+    { "id": "abdominal_cramps", "en": "Abdominal cramps", "de": "Bauchkrämpfe" },
+    { "id": "diarrhea", "en": "Diarrhea", "de": "Durchfall" },
+    { "id": "constipation", "en": "Constipation", "de": "Verstopfung" },
+    { "id": "bloating", "en": "Bloating/Fullness", "de": "Blähungen/Völlegefühl" },
+    { "id": "nausea", "en": "Nausea/Vomiting", "de": "Übelkeit/Erbrechen" },
+    { "id": "heartburn", "en": "Heartburn/Acid reflux", "de": "Sodbrennen/Aufstoßen" },
+    { "id": "weight_loss", "en": "Weight loss", "de": "Gewichtsverlust" },
+    { "id": "fatigue", "en": "Fatigue/Weakness", "de": "Müdigkeit/Schwäche" },
+    { "id": "skin_rash", "en": "Skin rash/Itching", "de": "Hautausschlag/Juckreiz" },
+    { "id": "headache", "en": "Headache/Dizziness", "de": "Kopfschmerzen/Schwindel" },
+    { "id": "palpitations", "en": "Palpitations/Circulation problems", "de": "Herzrasen/Kreislaufprobleme" },
+    { "id": "other", "en": "Other", "de": "Sonstiges" }
+  ]
+}

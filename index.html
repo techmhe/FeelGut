@@ -1,10 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FeelGut - Track Your Health</title>
     <style>
+        :root {
+            /* Light Mode Colors */
+            --bg-gradient-1: #e8f4fc;
+            --bg-gradient-2: #f0e6f6;
+            --bg-gradient-3: #e6f0f8;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: rgba(0, 0, 0, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.8);
+            --text-primary: rgba(0, 0, 0, 0.85);
+            --text-secondary: rgba(0, 0, 0, 0.55);
+            --text-tertiary: rgba(0, 0, 0, 0.35);
+            --accent-blue: rgba(0, 122, 255, 0.85);
+            --accent-pink: rgba(255, 45, 85, 0.85);
+            --accent-green: rgba(52, 199, 89, 0.85);
+            --accent-purple: rgba(175, 82, 222, 0.85);
+            --input-bg: rgba(255, 255, 255, 0.6);
+            --input-border: rgba(0, 0, 0, 0.1);
+            --nav-bg: rgba(255, 255, 255, 0.7);
+            --blur-amount: 20px;
+            --saturation: 180%;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-1: #1a1a2e;
+            --bg-gradient-2: #16213e;
+            --bg-gradient-3: #0f0f23;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+            --text-primary: rgba(255, 255, 255, 0.92);
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-tertiary: rgba(255, 255, 255, 0.4);
+            --accent-blue: rgba(10, 132, 255, 0.9);
+            --accent-pink: rgba(255, 55, 95, 0.9);
+            --accent-green: rgba(48, 209, 88, 0.9);
+            --accent-purple: rgba(191, 90, 242, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --nav-bg: rgba(30, 30, 40, 0.75);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,10 +55,18 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
+            background: 
+                radial-gradient(ellipse at 20% 20%, var(--bg-gradient-1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 30%, var(--bg-gradient-2) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 80%, var(--bg-gradient-3) 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            transition: all 0.4s ease;
             padding: 20px;
+            padding-bottom: 100px;
         }
 
         .container {
@@ -23,391 +74,2161 @@
             margin: 0 auto;
         }
 
-        h1 {
-            color: white;
-            text-align: center;
+        /* Header with theme toggle */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            font-size: 2.5rem;
         }
 
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Glass Card */
         .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            border-radius: 24px;
+            padding: 28px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 8px 32px var(--glass-shadow),
+                0 1px 0 var(--glass-highlight) inset;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 
+                0 12px 40px var(--glass-shadow),
+                0 1px 0 var(--glass-highlight) inset;
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
         }
 
         input[type="datetime-local"],
         select,
         textarea {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--input-border);
+            border-radius: 14px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         input[type="datetime-local"]:focus,
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        [data-theme="dark"] select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
         }
 
         textarea {
-            min-height: 80px;
+            min-height: 100px;
             resize: vertical;
-            font-family: inherit;
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
+            padding: 14px 28px;
+            border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
         }
 
         button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
         }
 
         button:active {
             transform: translateY(0);
         }
 
+        /* Filter Buttons */
         .filter-buttons {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 8px 20px;
+            padding: 10px 20px;
             font-size: 14px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            box-shadow: 0 2px 8px var(--glass-shadow);
         }
 
         .filter-btn.active {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-color: transparent;
+            color: white;
         }
 
+        /* Entries */
         .entries {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 14px;
         }
 
         .entry {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            transition: transform 0.2s;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entry::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-blue);
+            border-radius: 4px 0 0 4px;
         }
 
         .entry:hover {
-            transform: translateX(5px);
+            transform: translateX(4px);
+            box-shadow: 0 8px 25px var(--glass-shadow);
         }
 
-        .entry.symptom {
-            border-left-color: #f06292;
+        .entry.symptom::before {
+            background: linear-gradient(180deg, var(--accent-pink), var(--accent-purple));
         }
 
-        .entry.food {
-            border-left-color: #4caf50;
+        .entry.food::before {
+            background: linear-gradient(180deg, var(--accent-green), var(--accent-blue));
         }
 
         .entry-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .entry-type {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .entry-type.symptom {
-            background: #f8bbd0;
-            color: #c2185b;
+            background: rgba(255, 45, 85, 0.15);
+            color: var(--accent-pink);
         }
 
         .entry-type.food {
-            background: #c8e6c9;
-            color: #2e7d32;
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--accent-green);
         }
 
         .entry-date {
-            color: #666;
-            font-size: 14px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .entry-description {
-            color: #333;
-            line-height: 1.5;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 15px;
         }
 
         .delete-btn {
-            background: #f44336;
-            padding: 6px 12px;
+            background: rgba(255, 59, 48, 0.15);
+            color: rgba(255, 59, 48, 0.9);
+            padding: 8px 14px;
             font-size: 12px;
-            margin-left: 10px;
+            box-shadow: none;
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 59, 48, 0.25);
+            box-shadow: none;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #999;
+            padding: 50px 20px;
+            color: var(--text-tertiary);
         }
 
         .empty-state svg {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             margin-bottom: 20px;
-            opacity: 0.5;
+            opacity: 0.4;
+            stroke: var(--text-tertiary);
         }
 
-        @media (max-width: 600px) {
+        .empty-state p {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Bottom Navigation for Mobile */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border-top: 1px solid var(--glass-border);
+            padding: 12px 20px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            z-index: 1000;
+            box-shadow: 0 -4px 20px var(--glass-shadow);
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-tertiary);
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        .nav-item:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-item.active {
+            color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Views for mobile navigation */
+        .view {
+            display: block;
+        }
+
+        .view.hidden {
+            display: none;
+        }
+
+        /* Desktop Navigation in header */
+        .desktop-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .desktop-nav .nav-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            box-shadow: 0 2px 8px var(--glass-shadow);
+        }
+
+        .desktop-nav .nav-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-color: transparent;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+                padding-bottom: 120px;
+            }
+
+            .header {
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+
+            .desktop-nav {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: block;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 20px;
             }
 
             .entry-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 12px;
+            }
+
+            .entry-header > div {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .entry {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Settings List Styles */
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--input-bg);
+            border-radius: 14px;
+            border: 1px solid var(--input-border);
+            transition: all 0.2s ease;
+        }
+
+        .settings-item:hover:not(.disabled) {
+            background: var(--glass-bg);
+        }
+
+        .settings-item.disabled {
+            opacity: 0.6;
+        }
+
+        .settings-item-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .settings-item-info svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-blue);
+            flex-shrink: 0;
+        }
+
+        .settings-item-info > div {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .settings-label {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .settings-description {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .coming-soon {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            background: var(--glass-bg);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .toggle-track {
+            display: block;
+            width: 52px;
+            height: 28px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 2px 8px var(--glass-shadow),
+                inset 0 1px 0 var(--glass-highlight);
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            top: 2px;
+            left: 3px;
+            background: linear-gradient(145deg, #ffd700, #ffa500);
+            box-shadow: 0 2px 6px rgba(255, 165, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .toggle-thumb {
+            transform: translateX(23px);
+            background: linear-gradient(145deg, #a0a0ff, #6060c0);
+            box-shadow: 0 2px 6px rgba(100, 100, 200, 0.4);
+        }
+
+        .about-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .version-text {
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+
+        /* Symptom select group - hidden by default */
+        .symptom-group {
+            display: none;
+        }
+
+        .symptom-group.visible {
+            display: block;
+        }
+
+        /* Language selector */
+        .language-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        .lang-btn:hover {
+            transform: none;
+            background: var(--input-bg);
+            box-shadow: none;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Custom Modal Dialog */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 320px;
+            width: 90%;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 60px var(--glass-shadow);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .modal-btn-cancel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+        }
+
+        .modal-btn-cancel:hover {
+            background: var(--input-bg);
+        }
+
+        .modal-btn-confirm {
+            background: rgba(255, 59, 48, 0.9);
+            border: none;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: rgba(255, 59, 48, 1);
+        }
+
+        /* Auth Container */
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 40px);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturation));
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        .auth-tab:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .auth-tab.active {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px var(--glass-shadow);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: rgba(255, 59, 48, 0.9);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .auth-error.visible {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--input-bg);
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .user-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .signout-btn {
+            background: rgba(100, 100, 100, 0.1);
+            border: 1px solid rgba(100, 100, 100, 0.2);
+            color: var(--text-secondary);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: none;
+            margin-top: 8px;
+        }
+
+        .signout-btn:first-of-type {
+            margin-top: 0;
+        }
+
+        .signout-btn:hover {
+            background: rgba(100, 100, 100, 0.2);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .signout-btn.danger {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            color: rgba(255, 59, 48, 0.9);
+        }
+
+        .signout-btn.danger:hover {
+            background: rgba(255, 59, 48, 0.2);
+        }
+
+        /* Change Password Section */
+        .change-password-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .change-password-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .change-password-form .form-group {
+            margin-bottom: 12px;
+        }
+
+        .change-password-form input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .change-password-form input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .change-password-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .change-password-btn:hover {
+            opacity: 0.9;
+        }
+
+        .password-change-error {
+            color: rgba(255, 59, 48, 0.9);
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .password-change-error.visible {
+            display: block;
+        }
+
+        .password-change-success {
+            color: rgba(52, 199, 89, 0.9);
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .password-change-success.visible {
+            display: block;
+        }
+
+        /* Hide app when not logged in */
+        .app-container.hidden {
+            display: none;
+        }
+
+        .auth-view.hidden {
+            display: none;
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* Reduced transparency fallback */
+        @media (prefers-reduced-transparency: reduce) {
+            .card,
+            .entry,
+            .bottom-nav,
+            .theme-toggle,
+            .filter-btn,
+            input,
+            select,
+            textarea {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            
+            :root {
+                --glass-bg: rgba(240, 240, 245, 0.95);
+            }
+            
+            [data-theme="dark"] {
+                --glass-bg: rgba(40, 40, 50, 0.95);
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌟 FeelGut</h1>
+    <!-- Auth View -->
+    <div class="auth-view" id="authView">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1 class="auth-title">✨ FeelGut</h1>
+                <p class="auth-subtitle" data-i18n="authSubtitle">Track your health journey</p>
+                
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-auth-tab="login" data-i18n="login">Login</button>
+                    <button class="auth-tab" data-auth-tab="register" data-i18n="register">Register</button>
+                </div>
+                
+                <div class="auth-error" id="authError"></div>
+                
+                <!-- Login Form -->
+                <form class="auth-form active" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername" data-i18n="username">Username</label>
+                        <input type="text" id="loginUsername" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword" data-i18n="password">Password</label>
+                        <input type="password" id="loginPassword" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" data-i18n="login">Login</button>
+                </form>
+                
+                <!-- Register Form -->
+                <form class="auth-form" id="registerForm">
+                    <div class="form-group">
+                        <label for="registerUsername" data-i18n="username">Username</label>
+                        <input type="text" id="registerUsername" required autocomplete="username" minlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword" data-i18n="password">Password</label>
+                        <input type="password" id="registerPassword" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm" data-i18n="confirmPassword">Confirm Password</label>
+                        <input type="password" id="registerPasswordConfirm" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <button type="submit" data-i18n="register">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container hidden" id="appContainer">
+        <div class="container">
+        <div class="header">
+            <h1>✨ FeelGut</h1>
+            <nav class="desktop-nav">
+                <button class="nav-btn active" data-view="add" data-i18n="navAdd">Add Entry</button>
+                <button class="nav-btn" data-view="entries" data-i18n="navEntries">Entries</button>
+                <button class="nav-btn" data-view="advanced" data-i18n="navMore">More</button>
+            </nav>
+        </div>
         
-        <div class="card">
-            <h2 style="margin-bottom: 20px; color: #333;">Add New Entry</h2>
-            <form id="entryForm">
-                <div class="form-group">
-                    <label for="dateTime">Date & Time</label>
-                    <input type="datetime-local" id="dateTime" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="entryType">Type</label>
-                    <select id="entryType" required>
-                        <option value="">Select type...</option>
-                        <option value="food">Food</option>
-                        <option value="symptom">Symptom</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" placeholder="Describe what you ate or the symptoms you experienced..." required></textarea>
-                </div>
-                
-                <button type="submit">Add Entry</button>
-            </form>
+        <div id="addView" class="view">
+            <div class="card">
+                <h2 data-i18n="addNewEntry">Add New Entry</h2>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label for="dateTime" data-i18n="dateTime">Date & Time</label>
+                        <input type="datetime-local" id="dateTime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="entryType" data-i18n="type">Type</label>
+                        <select id="entryType" required>
+                            <option value="" data-i18n="selectType">Select type...</option>
+                            <option value="food" data-i18n="foodOption">🍎 Food</option>
+                            <option value="symptom" data-i18n="symptomOption">💊 Symptom</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group symptom-group" id="symptomGroup">
+                        <label for="symptomSelect" data-i18n="symptom">Symptom</label>
+                        <select id="symptomSelect">
+                            <option value="" data-i18n="selectSymptom">Select symptom...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="descriptionGroup">
+                        <label for="description" data-i18n="description">Description</label>
+                        <textarea id="description" data-i18n-placeholder="descriptionPlaceholder" placeholder="Describe what you ate or the symptoms you experienced..."></textarea>
+                    </div>
+                    
+                    <button type="submit" data-i18n="addEntry">Add Entry</button>
+                </form>
+            </div>
         </div>
 
-        <div class="card">
-            <h2 style="margin-bottom: 20px; color: #333;">Your Entries</h2>
-            
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="food">Food</button>
-                <button class="filter-btn" data-filter="symptom">Symptoms</button>
-            </div>
-            
-            <div id="entriesList" class="entries">
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    <p>No entries yet. Start tracking your health!</p>
+        <div id="entriesView" class="view hidden">
+            <div class="card">
+                <h2 data-i18n="yourEntries">Your Entries</h2>
+                
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all" data-i18n="filterAll">All</button>
+                    <button class="filter-btn" data-filter="food" data-i18n="filterFood">🍎 Food</button>
+                    <button class="filter-btn" data-filter="symptom" data-i18n="filterSymptoms">💊 Symptoms</button>
                 </div>
+                
+                <div id="entriesList" class="entries">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <p data-i18n="noEntriesYet">No entries yet. Start tracking your health!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="advancedView" class="view hidden">
+            <div class="card">
+                <h2 data-i18n="account">Account</h2>
+                
+                <div class="user-info" id="userInfo">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Username</div>
+                        <div class="user-label" data-i18n="loggedInAs">Logged in</div>
+                    </div>
+                </div>
+                
+                <div class="change-password-section">
+                    <h3 data-i18n="changePassword">Change Password</h3>
+                    <form id="changePasswordForm" class="change-password-form">
+                        <div class="form-group">
+                            <input type="password" id="currentPassword" data-i18n-placeholder="currentPassword" placeholder="Current password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="newPassword" data-i18n-placeholder="newPassword" placeholder="New password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="confirmNewPassword" data-i18n-placeholder="confirmNewPassword" placeholder="Confirm new password" required>
+                        </div>
+                        <div id="passwordChangeError" class="password-change-error"></div>
+                        <div id="passwordChangeSuccess" class="password-change-success"></div>
+                        <button type="submit" class="change-password-btn" data-i18n="updatePassword">Update Password</button>
+                    </form>
+                </div>
+                
+                <button class="signout-btn" id="signOutBtn" data-i18n="signOut">Sign Out</button>
+                <button class="signout-btn danger" id="deleteAccountBtn" data-i18n="deleteAccount">Delete Account</button>
+            </div>
+
+            <div class="card">
+                <h2 data-i18n="settingsMore">Settings & More</h2>
+                
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                            </svg>
+                            <div>
+                                <span class="settings-label" data-i18n="language">Language</span>
+                                <span class="settings-description" data-i18n="languageDesc">Choose your language</span>
+                            </div>
+                        </div>
+                        <div class="language-selector">
+                            <button class="lang-btn active" data-lang="en">EN</button>
+                            <button class="lang-btn" data-lang="de">DE</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                            <div>
+                                <span class="settings-label" data-i18n="appearance">Appearance</span>
+                                <span class="settings-description" data-i18n="appearanceDesc">Toggle dark mode</span>
+                            </div>
+                        </div>
+                        <button class="theme-toggle-btn" id="advancedThemeToggle" aria-label="Toggle dark mode">
+                            <span class="toggle-track">
+                                <span class="toggle-thumb"></span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="settings-item disabled">
+                        <div class="settings-item-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            <div>
+                                <span class="settings-label" data-i18n="exportData">Export Data</span>
+                                <span class="settings-description" data-i18n="exportDataDesc">Download your entries</span>
+                            </div>
+                        </div>
+                        <span class="coming-soon" data-i18n="comingSoon">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 data-i18n="about">About</h2>
+                <p class="about-text" data-i18n="aboutText">FeelGut helps you track your food intake and symptoms to better understand your digestive health.</p>
+                <p class="version-text">Version 1.0.0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <button class="nav-item active" data-view="add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <span data-i18n="navAddShort">Add</span>
+            </button>
+            <button class="nav-item" data-view="entries">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <line x1="9" y1="12" x2="15" y2="12"/>
+                    <line x1="9" y1="16" x2="15" y2="16"/>
+                </svg>
+                <span data-i18n="navEntries">Entries</span>
+            </button>
+            <button class="nav-item" data-view="advanced">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span data-i18n="navMoreShort">More</span>
+            </button>
+        </div>
+    </nav>
+    </div><!-- End app-container -->
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-dialog">
+            <div class="modal-title" data-i18n="confirmDelete">Delete Entry</div>
+            <div class="modal-message" id="confirmMessage"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="modalCancel" data-i18n="cancel">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="modalConfirm" data-i18n="delete">Delete</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize the app
-        let entries = [];
-        let currentFilter = 'all';
+        // ============================================
+        // TRANSLATIONS
+        // ============================================
+        const translations = {
+            en: {
+                // Auth
+                authSubtitle: 'Track your health journey',
+                login: 'Login',
+                register: 'Register',
+                username: 'Username',
+                password: 'Password',
+                confirmPassword: 'Confirm Password',
+                account: 'Account',
+                loggedInAs: 'Logged in',
+                passwordMismatch: 'Passwords do not match',
+                loginError: 'Invalid username or password',
+                registerError: 'Registration failed. Username may already exist.',
+                
+                // Navigation
+                navAdd: 'Add Entry',
+                navAddShort: 'Add',
+                navEntries: 'Entries',
+                navMore: 'More',
+                navMoreShort: 'More',
+                
+                // Add Entry Form
+                addNewEntry: 'Add New Entry',
+                dateTime: 'Date & Time',
+                type: 'Type',
+                selectType: 'Select type...',
+                foodOption: '🍎 Food',
+                symptomOption: '💊 Symptom',
+                symptom: 'Symptom',
+                selectSymptom: 'Select symptom...',
+                description: 'Description',
+                descriptionPlaceholder: 'Describe what you ate or the symptoms you experienced...',
+                descriptionPlaceholderOther: 'Describe your symptom...',
+                addEntry: 'Add Entry',
+                
+                // Entries View
+                yourEntries: 'Your Entries',
+                filterAll: 'All',
+                filterFood: '🍎 Food',
+                filterSymptoms: '💊 Symptoms',
+                noEntriesYet: 'No entries yet. Start tracking your health!',
+                noFoodEntries: 'No food entries yet.',
+                noSymptomEntries: 'No symptom entries yet.',
+                delete: 'Delete',
+                deleteConfirm: 'Are you sure you want to delete this entry?',
+                confirmDelete: 'Delete Entry',
+                cancel: 'Cancel',
+                food: 'Food',
+                symptomType: 'Symptom',
+                
+                // Settings
+                settingsMore: 'Settings & More',
+                language: 'Language',
+                languageDesc: 'Choose your language',
+                appearance: 'Appearance',
+                appearanceDesc: 'Toggle dark mode',
+                exportData: 'Export Data',
+                exportDataDesc: 'Download your entries',
+                signOut: 'Sign Out',
+                deleteAccount: 'Delete Account',
+                changePassword: 'Change Password',
+                currentPassword: 'Current password',
+                newPassword: 'New password',
+                confirmNewPassword: 'Confirm new password',
+                updatePassword: 'Update Password',
+                passwordChangeSuccess: 'Password changed successfully!',
+                passwordChangeError: 'Failed to change password. Please check your current password.',
+                newPasswordMismatch: 'New passwords do not match.',
+                deleteAccountConfirm: 'Are you sure you want to delete your account? All your data will be permanently deleted. This action cannot be undone.',
+                accountDeleted: 'Your account has been deleted.',
+                signOutDesc: 'Log out of your account',
+                comingSoon: 'Coming Soon',
+                about: 'About',
+                aboutText: 'FeelGut helps you track your food intake and symptoms to better understand your digestive health.'
+            },
+            de: {
+                // Auth
+                authSubtitle: 'Verfolgen Sie Ihre Gesundheitsreise',
+                login: 'Anmelden',
+                register: 'Registrieren',
+                username: 'Benutzername',
+                password: 'Passwort',
+                confirmPassword: 'Passwort bestätigen',
+                account: 'Konto',
+                loggedInAs: 'Angemeldet',
+                passwordMismatch: 'Passwörter stimmen nicht überein',
+                loginError: 'Ungültiger Benutzername oder Passwort',
+                registerError: 'Registrierung fehlgeschlagen. Benutzername existiert möglicherweise bereits.',
+                
+                // Navigation
+                navAdd: 'Eintrag hinzufügen',
+                navAddShort: 'Hinzufügen',
+                navEntries: 'Einträge',
+                navMore: 'Mehr',
+                navMoreShort: 'Mehr',
+                
+                // Add Entry Form
+                addNewEntry: 'Neuer Eintrag',
+                dateTime: 'Datum & Uhrzeit',
+                type: 'Typ',
+                selectType: 'Typ auswählen...',
+                foodOption: '🍎 Essen',
+                symptomOption: '💊 Symptom',
+                symptom: 'Symptom',
+                selectSymptom: 'Symptom auswählen...',
+                description: 'Beschreibung',
+                descriptionPlaceholder: 'Beschreiben Sie, was Sie gegessen haben...',
+                descriptionPlaceholderOther: 'Beschreiben Sie Ihr Symptom...',
+                addEntry: 'Eintrag hinzufügen',
+                
+                // Entries View
+                yourEntries: 'Ihre Einträge',
+                filterAll: 'Alle',
+                filterFood: '🍎 Essen',
+                filterSymptoms: '💊 Symptome',
+                noEntriesYet: 'Noch keine Einträge. Beginnen Sie mit der Gesundheitsverfolgung!',
+                noFoodEntries: 'Noch keine Essenseinträge.',
+                noSymptomEntries: 'Noch keine Symptomeinträge.',
+                delete: 'Löschen',
+                deleteConfirm: 'Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?',
+                confirmDelete: 'Eintrag löschen',
+                cancel: 'Abbrechen',
+                food: 'Essen',
+                symptomType: 'Symptom',
+                
+                // Settings
+                settingsMore: 'Einstellungen & Mehr',
+                language: 'Sprache',
+                languageDesc: 'Wählen Sie Ihre Sprache',
+                appearance: 'Darstellung',
+                appearanceDesc: 'Dunkelmodus umschalten',
+                exportData: 'Daten exportieren',
+                exportDataDesc: 'Ihre Einträge herunterladen',
+                signOut: 'Abmelden',
+                deleteAccount: 'Konto löschen',
+                changePassword: 'Passwort ändern',
+                currentPassword: 'Aktuelles Passwort',
+                newPassword: 'Neues Passwort',
+                confirmNewPassword: 'Neues Passwort bestätigen',
+                updatePassword: 'Passwort aktualisieren',
+                passwordChangeSuccess: 'Passwort erfolgreich geändert!',
+                passwordChangeError: 'Passwort konnte nicht geändert werden. Bitte überprüfen Sie Ihr aktuelles Passwort.',
+                newPasswordMismatch: 'Die neuen Passwörter stimmen nicht überein.',
+                deleteAccountConfirm: 'Möchten Sie Ihr Konto wirklich löschen? Alle Ihre Daten werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',
+                accountDeleted: 'Ihr Konto wurde gelöscht.',
+                signOutDesc: 'Von Ihrem Konto abmelden',
+                comingSoon: 'Demnächst',
+                about: 'Über',
+                aboutText: 'FeelGut hilft Ihnen, Ihre Nahrungsaufnahme und Symptome zu verfolgen, um Ihre Verdauungsgesundheit besser zu verstehen.'
+            }
+        };
 
-        // Load entries from localStorage on page load
-        function loadEntries() {
+        // ============================================
+        // API BASE URL
+        // ============================================
+        const API_BASE = '/api';
+
+        // ============================================
+        // SYMPTOMS DATABASE
+        // ============================================
+        let symptomsData = [];
+
+        async function loadSymptomsFromServer() {
             try {
-                const stored = localStorage.getItem('feelgut_entries');
-                if (stored) {
-                    entries = JSON.parse(stored);
+                const response = await fetch(`${API_BASE}/symptoms`);
+                if (response.ok) {
+                    const data = await response.json();
+                    symptomsData = data.symptoms;
+                    return;
                 }
             } catch (error) {
-                console.error('Error loading entries from localStorage:', error);
-                entries = [];
+                console.log('Server not available, loading from file');
             }
+            
+            // Fallback to file
+            await loadSymptomsFromFile();
+        }
+
+        async function loadSymptomsFromFile() {
+            try {
+                const response = await fetch('data/symptoms.json');
+                const data = await response.json();
+                symptomsData = data.symptoms;
+            } catch (error) {
+                console.error('Error loading symptoms:', error);
+                // Fallback to embedded data if file loading fails
+                symptomsData = [
+                    { id: 'stomach_pain', en: 'Stomach pain', de: 'Magenschmerzen' },
+                    { id: 'abdominal_cramps', en: 'Abdominal cramps', de: 'Bauchkrämpfe' },
+                    { id: 'diarrhea', en: 'Diarrhea', de: 'Durchfall' },
+                    { id: 'constipation', en: 'Constipation', de: 'Verstopfung' },
+                    { id: 'bloating', en: 'Bloating/Fullness', de: 'Blähungen/Völlegefühl' },
+                    { id: 'nausea', en: 'Nausea/Vomiting', de: 'Übelkeit/Erbrechen' },
+                    { id: 'heartburn', en: 'Heartburn/Acid reflux', de: 'Sodbrennen/Aufstoßen' },
+                    { id: 'weight_loss', en: 'Weight loss', de: 'Gewichtsverlust' },
+                    { id: 'fatigue', en: 'Fatigue/Weakness', de: 'Müdigkeit/Schwäche' },
+                    { id: 'skin_rash', en: 'Skin rash/Itching', de: 'Hautausschlag/Juckreiz' },
+                    { id: 'headache', en: 'Headache/Dizziness', de: 'Kopfschmerzen/Schwindel' },
+                    { id: 'palpitations', en: 'Palpitations/Circulation problems', de: 'Herzrasen/Kreislaufprobleme' },
+                    { id: 'other', en: 'Other', de: 'Sonstiges' }
+                ];
+            }
+        }
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        let currentUser = null;
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    return true;
+                }
+            } catch (error) {
+                console.log('Not authenticated');
+            }
+            currentUser = null;
+            return false;
+        }
+
+        async function login(username, password) {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Login failed');
+            }
+            
+            currentUser = data.user;
+            return data;
+        }
+
+        async function register(username, password) {
+            const response = await fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Registration failed');
+            }
+            
+            currentUser = data.user;
+            return data;
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            currentUser = null;
+        }
+
+        function showAuthView() {
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        function showAppView() {
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            updateUserInfo();
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            }
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+            errorEl.classList.add('visible');
+        }
+
+        function hideAuthError() {
+            document.getElementById('authError').classList.remove('visible');
+        }
+
+        // Auth tab switching
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.dataset.authTab;
+                
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+                document.getElementById(targetTab + 'Form').classList.add('active');
+                
+                hideAuthError();
+            });
+        });
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideAuthError();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                await login(username, password);
+                this.reset();
+                await initAppAfterAuth();
+                showAppView();
+            } catch (error) {
+                showAuthError(t('loginError'));
+            }
+        });
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideAuthError();
+            
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerPasswordConfirm').value;
+            
+            if (password !== confirmPassword) {
+                showAuthError(t('passwordMismatch'));
+                return;
+            }
+            
+            try {
+                await register(username, password);
+                this.reset();
+                await initAppAfterAuth();
+                showAppView();
+            } catch (error) {
+                showAuthError(error.message || t('registerError'));
+            }
+        });
+
+        // Sign out button
+        document.getElementById('signOutBtn').addEventListener('click', async function() {
+            await logout();
+            showAuthView();
+        });
+
+        // Delete account button
+        document.getElementById('deleteAccountBtn').addEventListener('click', async function() {
+            const confirmed = await showConfirmModal(t('deleteAccountConfirm'));
+            if (confirmed) {
+                try {
+                    const response = await fetch(`${API_BASE}/auth/delete-account`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        currentUser = null;
+                        showAuthView();
+                    } else {
+                        console.error('Failed to delete account');
+                    }
+                } catch (error) {
+                    console.error('Error deleting account:', error);
+                }
+            }
+        });
+
+        // Change password form
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const errorEl = document.getElementById('passwordChangeError');
+            const successEl = document.getElementById('passwordChangeSuccess');
+            errorEl.classList.remove('visible');
+            successEl.classList.remove('visible');
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (newPassword !== confirmNewPassword) {
+                errorEl.textContent = t('newPasswordMismatch');
+                errorEl.classList.add('visible');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                errorEl.textContent = t('passwordTooShort') || 'Password must be at least 6 characters';
+                errorEl.classList.add('visible');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/change-password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                if (response.ok) {
+                    successEl.textContent = t('passwordChangeSuccess');
+                    successEl.classList.add('visible');
+                    this.reset();
+                } else {
+                    errorEl.textContent = t('passwordChangeError');
+                    errorEl.classList.add('visible');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                errorEl.textContent = t('passwordChangeError');
+                errorEl.classList.add('visible');
+            }
+        });
+
+        // ============================================
+        // SERVER API FUNCTIONS
+        // ============================================
+        async function fetchEntries() {
+            try {
+                const response = await fetch(`${API_BASE}/entries`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.entries;
+                }
+            } catch (error) {
+                console.error('Error fetching entries:', error);
+            }
+            return [];
+        }
+
+        async function addEntry(entry) {
+            const response = await fetch(`${API_BASE}/entries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(entry)
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to add entry');
+            }
+            
+            return await response.json();
+        }
+
+        async function deleteEntry(id) {
+            const response = await fetch(`${API_BASE}/entries/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete entry');
+            }
+        }
+
+        async function updateUserSettings(settings) {
+            try {
+                await fetch(`${API_BASE}/user/settings`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(settings)
+                });
+            } catch (error) {
+                console.error('Error updating settings:', error);
+            }
+        }
+
+        // ============================================
+        // LOCAL SETTINGS (for theme/language before login)
+        // ============================================
+        function getSetting(key) {
+            return localStorage.getItem('feelgut_' + key);
+        }
+
+        function setSetting(key, value) {
+            localStorage.setItem('feelgut_' + key, value);
+            // Also update on server if logged in
+            if (currentUser) {
+                updateUserSettings({ [key]: value });
+            }
+        }
+
+        // ============================================
+        // APP STATE
+        // ============================================
+        let currentFilter = 'all';
+        let currentLanguage = 'en';
+
+        // ============================================
+        // INTERNATIONALIZATION
+        // ============================================
+        function t(key) {
+            return translations[currentLanguage][key] || translations['en'][key] || key;
+        }
+
+        function updateUI() {
+            // Update all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                el.placeholder = t(key);
+            });
+            
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLanguage;
+            
+            // Update symptom dropdown
+            populateSymptomDropdown();
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
+            });
+            
+            // Refresh entries display
             displayEntries();
         }
 
-        // Save entries to localStorage
-        function saveEntries() {
-            try {
-                localStorage.setItem('feelgut_entries', JSON.stringify(entries));
-            } catch (error) {
-                console.error('Error saving entries to localStorage:', error);
-                alert('Unable to save data. Your browser storage may be full or disabled.');
-            }
+        async function setLanguage(lang) {
+            currentLanguage = lang;
+            setSetting('language', lang);
+            updateUI();
         }
-        
-        // Escape HTML to prevent XSS
+
+        function populateSymptomDropdown() {
+            const select = document.getElementById('symptomSelect');
+            select.innerHTML = `<option value="" data-i18n="selectSymptom">${t('selectSymptom')}</option>`;
+            
+            symptomsData.forEach(symptom => {
+                const option = document.createElement('option');
+                option.value = symptom.id;
+                option.textContent = symptom[currentLanguage] || symptom.en;
+                select.appendChild(option);
+            });
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Format date for display
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleString('en-US', {
+            const locale = currentLanguage === 'de' ? 'de-DE' : 'en-US';
+            return date.toLocaleString(locale, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true
+                hour12: currentLanguage === 'en'
             });
         }
 
-        // Display entries
-        function displayEntries() {
+        function getSymptomName(symptomId) {
+            const symptom = symptomsData.find(s => s.id === symptomId);
+            return symptom ? (symptom[currentLanguage] || symptom.en) : symptomId;
+        }
+
+        // ============================================
+        // ENTRY MANAGEMENT
+        // ============================================
+        async function displayEntries() {
             const container = document.getElementById('entriesList');
             
+            let entries = await fetchEntries();
+            
             // Filter entries
-            let filteredEntries = entries;
             if (currentFilter !== 'all') {
-                filteredEntries = entries.filter(entry => entry.type === currentFilter);
+                entries = entries.filter(entry => entry.type === currentFilter);
             }
 
             // Sort by date (newest first)
-            filteredEntries.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+            entries.sort((a, b) => new Date(b.date_time || b.dateTime) - new Date(a.date_time || a.dateTime));
 
-            if (filteredEntries.length === 0) {
+            if (entries.length === 0) {
+                let emptyMessage = t('noEntriesYet');
+                if (currentFilter === 'food') emptyMessage = t('noFoodEntries');
+                if (currentFilter === 'symptom') emptyMessage = t('noSymptomEntries');
+                
                 container.innerHTML = `
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
-                        <p>No ${currentFilter === 'all' ? '' : currentFilter} entries yet.</p>
+                        <p>${emptyMessage}</p>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = filteredEntries.map((entry, index) => `
-                <div class="entry ${entry.type}">
-                    <div class="entry-header">
-                        <div>
-                            <span class="entry-type ${entry.type}">${escapeHtml(entry.type)}</span>
-                            <span class="entry-date">${formatDate(entry.dateTime)}</span>
+            container.innerHTML = entries.map(entry => {
+                const typeLabel = entry.type === 'food' ? t('food') : t('symptomType');
+                const emoji = entry.type === 'food' ? '🍎' : '💊';
+                const dateTime = entry.date_time || entry.dateTime;
+                const symptomId = entry.symptom_id || entry.symptomId;
+                
+                // For symptoms, show the symptom name from the database
+                let description = entry.description || '';
+                if (entry.type === 'symptom' && symptomId) {
+                    const symptomName = getSymptomName(symptomId);
+                    description = symptomName + (entry.description ? ': ' + entry.description : '');
+                }
+                
+                return `
+                    <div class="entry ${entry.type}" data-id="${entry.id}">
+                        <div class="entry-header">
+                            <div>
+                                <span class="entry-type ${entry.type}">${emoji} ${escapeHtml(typeLabel)}</span>
+                                <span class="entry-date">${formatDate(dateTime)}</span>
+                            </div>
+                            <button class="delete-btn">${t('delete')}</button>
                         </div>
-                        <button class="delete-btn" data-entry-id="${entry.id}">Delete</button>
+                        <div class="entry-description">${escapeHtml(description)}</div>
                     </div>
-                    <div class="entry-description">${escapeHtml(entry.description)}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             // Attach event listeners to delete buttons
             container.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const entryId = parseInt(this.dataset.entryId);
-                    deleteEntry(entryId);
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const entryEl = this.closest('.entry');
+                    const entryId = Number(entryEl.dataset.id);
+                    await deleteEntryById(entryId);
                 });
             });
         }
 
-        // Add new entry
-        document.getElementById('entryForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Custom confirmation modal
+        let pendingDeleteId = null;
 
-            const dateTime = document.getElementById('dateTime').value;
-            const type = document.getElementById('entryType').value;
-            const description = document.getElementById('description').value;
+        function showConfirmModal(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                const messageEl = document.getElementById('confirmMessage');
+                const confirmBtn = document.getElementById('modalConfirm');
+                const cancelBtn = document.getElementById('modalCancel');
 
-            const newEntry = {
-                id: Date.now(),
-                dateTime: dateTime,
-                type: type,
-                description: description
-            };
+                messageEl.textContent = message;
+                modal.classList.add('visible');
 
-            entries.push(newEntry);
-            saveEntries();
-            displayEntries();
+                const cleanup = () => {
+                    modal.classList.remove('visible');
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
 
-            // Reset form
-            this.reset();
-            
-            // Set default date/time again
-            setDefaultDateTime();
-        });
+                const onConfirm = () => {
+                    cleanup();
+                    resolve(true);
+                };
 
-        // Delete entry
-        function deleteEntry(id) {
-            if (confirm('Are you sure you want to delete this entry?')) {
-                entries = entries.filter(entry => entry.id !== id);
-                saveEntries();
-                displayEntries();
+                const onCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        async function deleteEntryById(id) {
+            console.log('Deleting entry with id:', id, 'type:', typeof id);
+            const confirmed = await showConfirmModal(t('deleteConfirm'));
+            if (confirmed) {
+                try {
+                    await deleteEntry(id);
+                    console.log('Entry deleted successfully');
+                    await displayEntries();
+                } catch (error) {
+                    console.error('Error deleting entry:', error);
+                }
             }
         }
 
-        // Filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Update active state
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Update filter and display
-                currentFilter = this.dataset.filter;
-                displayEntries();
-            });
-        });
-
-        // Set default date/time to now
+        // ============================================
+        // FORM HANDLING
+        // ============================================
         function setDefaultDateTime() {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.getElementById('dateTime').value = now.toISOString().slice(0, 16);
         }
 
-        // Initialize app
-        setDefaultDateTime();
-        loadEntries();
+        function updateDescriptionVisibility() {
+            const entryType = document.getElementById('entryType').value;
+            const symptomSelect = document.getElementById('symptomSelect').value;
+            const descriptionGroup = document.getElementById('descriptionGroup');
+            const description = document.getElementById('description');
+            
+            // Show description for: food entries, or symptom entries with "other" selected
+            if (entryType === 'food') {
+                descriptionGroup.style.display = 'block';
+                description.required = true;
+                description.placeholder = t('descriptionPlaceholder');
+            } else if (entryType === 'symptom' && symptomSelect === 'other') {
+                descriptionGroup.style.display = 'block';
+                description.required = true;
+                description.placeholder = t('descriptionPlaceholderOther');
+            } else {
+                descriptionGroup.style.display = 'none';
+                description.required = false;
+                description.value = '';
+            }
+        }
+
+        // Show/hide symptom dropdown based on type selection
+        document.getElementById('entryType').addEventListener('change', function() {
+            const symptomGroup = document.getElementById('symptomGroup');
+            const symptomSelect = document.getElementById('symptomSelect');
+            
+            if (this.value === 'symptom') {
+                symptomGroup.classList.add('visible');
+                symptomSelect.required = true;
+            } else {
+                symptomGroup.classList.remove('visible');
+                symptomSelect.required = false;
+                symptomSelect.value = '';
+            }
+            
+            updateDescriptionVisibility();
+        });
+
+        // Show/hide description based on symptom selection
+        document.getElementById('symptomSelect').addEventListener('change', function() {
+            updateDescriptionVisibility();
+        });
+
+        // Form submission
+        document.getElementById('entryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const dateTime = document.getElementById('dateTime').value;
+            const type = document.getElementById('entryType').value;
+            const description = document.getElementById('description').value;
+            const symptomId = document.getElementById('symptomSelect').value;
+
+            const newEntry = {
+                dateTime: dateTime,
+                type: type,
+                description: description
+            };
+            
+            // Add symptom ID if it's a symptom entry
+            if (type === 'symptom' && symptomId) {
+                newEntry.symptomId = symptomId;
+            }
+
+            try {
+                await addEntry(newEntry);
+                await displayEntries();
+
+                // Reset form
+                this.reset();
+                document.getElementById('symptomGroup').classList.remove('visible');
+                document.getElementById('descriptionGroup').style.display = 'block';
+                document.getElementById('description').required = true;
+                setDefaultDateTime();
+            } catch (error) {
+                console.error('Error adding entry:', error);
+                alert('Error adding entry. Please try again.');
+            }
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                displayEntries();
+            });
+        });
+
+        // ============================================
+        // THEME MANAGEMENT
+        // ============================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            setSetting('theme', newTheme);
+        }
+
+        function loadTheme() {
+            const savedTheme = getSetting('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        document.getElementById('advancedThemeToggle').addEventListener('click', toggleTheme);
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const savedTheme = getSetting('theme');
+            if (!savedTheme) {
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            }
+        });
+
+        // ============================================
+        // VIEW NAVIGATION
+        // ============================================
+        function switchView(viewName) {
+            document.getElementById('addView').classList.toggle('hidden', viewName !== 'add');
+            document.getElementById('entriesView').classList.toggle('hidden', viewName !== 'entries');
+            document.getElementById('advancedView').classList.toggle('hidden', viewName !== 'advanced');
+            
+            document.querySelectorAll('.desktop-nav .nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === viewName);
+            });
+            
+            document.querySelectorAll('.bottom-nav .nav-item[data-view]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === viewName);
+            });
+        }
+
+        // Desktop navigation
+        document.querySelectorAll('.desktop-nav .nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                switchView(this.dataset.view);
+            });
+        });
+
+        // Mobile navigation
+        document.querySelectorAll('.bottom-nav .nav-item[data-view]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                switchView(this.dataset.view);
+            });
+        });
+
+        // Language selector
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                setLanguage(this.dataset.lang);
+            });
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        // Initialize app after successful authentication
+        async function initAppAfterAuth() {
+            await loadSymptomsFromServer();
+            setDefaultDateTime();
+            populateSymptomDropdown();
+            
+            // Load user settings from server
+            if (currentUser) {
+                // Apply language
+                if (currentUser.language) {
+                    currentLanguage = currentUser.language;
+                }
+                
+                // Apply theme (default to dark if not set)
+                const userTheme = currentUser.theme || 'dark';
+                document.documentElement.setAttribute('data-theme', userTheme);
+            }
+            
+            updateUI();
+            await displayEntries();
+        }
+        
+        async function initApp() {
+            try {
+                // Load local settings first (for theming before auth)
+                const savedLanguage = getSetting('language');
+                if (savedLanguage) {
+                    currentLanguage = savedLanguage;
+                } else {
+                    const browserLang = navigator.language.split('-')[0];
+                    currentLanguage = ['en', 'de'].includes(browserLang) ? browserLang : 'en';
+                }
+                
+                loadTheme();
+                setDefaultDateTime();
+                
+                // Load symptoms (fallback to file if server unavailable)
+                await loadSymptomsFromFile();
+                populateSymptomDropdown();
+                updateUI();
+                
+                // Check if user is authenticated
+                const isLoggedIn = await checkAuth();
+                
+                if (isLoggedIn) {
+                    await initAppAfterAuth();
+                    showAppView();
+                } else {
+                    showAuthView();
+                }
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showAuthView();
+            }
+        }
+
+        initApp();
     </script>
 </body>
 </html>
