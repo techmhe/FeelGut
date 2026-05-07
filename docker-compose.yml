@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
+      - PORT=3000
+    volumes:
+      - feelgut-data:/app/server/data
+    restart: unless-stopped
+
+volumes:
+  feelgut-data:

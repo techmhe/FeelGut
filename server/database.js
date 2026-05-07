@@ -2,76 +2,113 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'feelgut.db');
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_PATH = path.join(DATA_DIR, 'feelgut.db');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 let db = null;
 
 async function initDatabase() {
     const SQL = await initSqlJs();
-    
-    // Load existing database or create new one
+
     if (fs.existsSync(DB_PATH)) {
         const fileBuffer = fs.readFileSync(DB_PATH);
         db = new SQL.Database(fileBuffer);
     } else {
         db = new SQL.Database();
     }
-    
-    // Create tables
+
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            username      TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            language TEXT DEFAULT 'en',
-            theme TEXT DEFAULT 'dark',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            language      TEXT DEFAULT 'de',
+            theme         TEXT DEFAULT 'dark',
+            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    
+
     db.run(`
         CREATE TABLE IF NOT EXISTS entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            type TEXT NOT NULL,
-            symptom_id TEXT,
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id     INTEGER NOT NULL,
+            type        TEXT NOT NULL,
+            meal_time   TEXT,
+            symptom_id  TEXT,
+            severity    TEXT,
             description TEXT,
-            date_time DATETIME NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            date_time   DATETIME NOT NULL,
+            created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
     `);
-    
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS entry_symptoms (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id   INTEGER NOT NULL,
+            symptom_id TEXT NOT NULL,
+            severity   TEXT,
+            FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+        );
+    `);
+
+    // Migration: severity column für bestehende DBs
+    try { db.run('ALTER TABLE entries ADD COLUMN severity TEXT'); } catch (_) {}
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS meal_items (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id  INTEGER NOT NULL,
+            item_type TEXT NOT NULL,
+            name      TEXT NOT NULL,
+            FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+        );
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS item_ingredients (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id INTEGER NOT NULL,
+            name    TEXT NOT NULL,
+            FOREIGN KEY (item_id) REFERENCES meal_items(id) ON DELETE CASCADE
+        );
+    `);
+
     db.run(`
         CREATE TABLE IF NOT EXISTS symptoms (
-            id TEXT PRIMARY KEY,
+            id      TEXT PRIMARY KEY,
             name_en TEXT NOT NULL,
             name_de TEXT NOT NULL
         );
     `);
-    
-    // Insert default symptoms if not exists
+
     const symptomsData = [
-        { id: 'stomach_pain', en: 'Stomach pain', de: 'Magenschmerzen' },
-        { id: 'abdominal_cramps', en: 'Abdominal cramps', de: 'Bauchkrämpfe' },
-        { id: 'diarrhea', en: 'Diarrhea', de: 'Durchfall' },
-        { id: 'constipation', en: 'Constipation', de: 'Verstopfung' },
-        { id: 'bloating', en: 'Bloating/Fullness', de: 'Blähungen/Völlegefühl' },
-        { id: 'nausea', en: 'Nausea/Vomiting', de: 'Übelkeit/Erbrechen' },
-        { id: 'heartburn', en: 'Heartburn/Acid reflux', de: 'Sodbrennen/Aufstoßen' },
-        { id: 'weight_loss', en: 'Weight loss', de: 'Gewichtsverlust' },
-        { id: 'fatigue', en: 'Fatigue/Weakness', de: 'Müdigkeit/Schwäche' },
-        { id: 'skin_rash', en: 'Skin rash/Itching', de: 'Hautausschlag/Juckreiz' },
-        { id: 'headache', en: 'Headache/Dizziness', de: 'Kopfschmerzen/Schwindel' },
-        { id: 'palpitations', en: 'Palpitations/Circulation problems', de: 'Herzrasen/Kreislaufprobleme' },
-        { id: 'other', en: 'Other', de: 'Sonstiges' }
+        { id: 'stomach_pain',          en: 'Stomach pain',                        de: 'Magenschmerzen' },
+        { id: 'abdominal_cramps',      en: 'Abdominal cramps',                    de: 'Bauchkrämpfe' },
+        { id: 'diarrhea',              en: 'Diarrhea',                            de: 'Durchfall' },
+        { id: 'constipation',          en: 'Constipation',                        de: 'Verstopfung' },
+        { id: 'bloating',              en: 'Bloating',                            de: 'Blähungen' },
+        { id: 'fullness',              en: 'Fullness',                            de: 'Völlegefühl' },
+        { id: 'distended_bowel',       en: 'Distended bowel',                     de: 'Aufgeblähter Darm' },
+        { id: 'crohn_pain',            en: 'Pain at Crohn\'s site',               de: 'Schmerzen an Crohn-Stelle' },
+        { id: 'crohn_pressure_pain',   en: 'Pain when pressing Crohn\'s site',    de: 'Schmerzen bei Druck auf Crohn-Stelle' },
+        { id: 'nausea',                en: 'Nausea/Vomiting',                     de: 'Übelkeit/Erbrechen' },
+        { id: 'heartburn',             en: 'Heartburn/Acid reflux',               de: 'Sodbrennen/Aufstoßen' },
+        { id: 'weight_loss',           en: 'Weight loss',                         de: 'Gewichtsverlust' },
+        { id: 'fatigue',               en: 'Fatigue/Weakness',                    de: 'Müdigkeit/Schwäche' },
+        { id: 'skin_rash',             en: 'Skin rash/Itching',                   de: 'Hautausschlag/Juckreiz' },
+        { id: 'headache',              en: 'Headache/Dizziness',                  de: 'Kopfschmerzen/Schwindel' },
+        { id: 'palpitations',          en: 'Palpitations/Circulation',            de: 'Herzrasen/Kreislaufprobleme' },
+        { id: 'other',                 en: 'Other',                               de: 'Sonstiges' },
     ];
-    
-    for (const symptom of symptomsData) {
-        db.run('INSERT OR IGNORE INTO symptoms (id, name_en, name_de) VALUES (?, ?, ?)', 
-            [symptom.id, symptom.en, symptom.de]);
+
+    for (const s of symptomsData) {
+        db.run('INSERT OR REPLACE INTO symptoms (id, name_en, name_de) VALUES (?, ?, ?)', [s.id, s.en, s.de]);
     }
-    
+
     saveDatabase();
     return db;
 }
@@ -79,8 +116,7 @@ async function initDatabase() {
 function saveDatabase() {
     if (db) {
         const data = db.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(DB_PATH, buffer);
+        fs.writeFileSync(DB_PATH, Buffer.from(data), { mode: 0o600 });
     }
 }
 
@@ -88,38 +124,29 @@ function getDb() {
     return db;
 }
 
-// Helper functions that mirror better-sqlite3 API
 function prepare(sql) {
     return {
         run: (...params) => {
             try {
                 const stmt = db.prepare(sql);
-                if (params.length > 0) {
-                    stmt.bind(params);
-                }
+                if (params.length > 0) stmt.bind(params);
                 stmt.step();
                 stmt.free();
-                
-                // Get last insert rowid immediately after the insert
                 const lastIdStmt = db.prepare('SELECT last_insert_rowid() as id');
                 lastIdStmt.step();
                 const lastId = lastIdStmt.getAsObject().id;
                 lastIdStmt.free();
-                
                 saveDatabase();
-                console.log('Run completed, lastInsertRowid:', lastId);
                 return { lastInsertRowid: lastId };
             } catch (error) {
-                console.error('Database run error:', error, 'SQL:', sql, 'Params:', params);
+                console.error('DB run error:', error, 'SQL:', sql);
                 throw error;
             }
         },
         get: (...params) => {
             try {
                 const stmt = db.prepare(sql);
-                if (params.length > 0) {
-                    stmt.bind(params);
-                }
+                if (params.length > 0) stmt.bind(params);
                 if (stmt.step()) {
                     const row = stmt.getAsObject();
                     stmt.free();
@@ -128,7 +155,7 @@ function prepare(sql) {
                 stmt.free();
                 return undefined;
             } catch (error) {
-                console.error('Database get error:', error, 'SQL:', sql, 'Params:', params);
+                console.error('DB get error:', error, 'SQL:', sql);
                 throw error;
             }
         },
@@ -136,39 +163,16 @@ function prepare(sql) {
             try {
                 const results = [];
                 const stmt = db.prepare(sql);
-                if (params.length > 0) {
-                    stmt.bind(params);
-                }
-                while (stmt.step()) {
-                    results.push(stmt.getAsObject());
-                }
+                if (params.length > 0) stmt.bind(params);
+                while (stmt.step()) results.push(stmt.getAsObject());
                 stmt.free();
                 return results;
             } catch (error) {
-                console.error('Database all error:', error, 'SQL:', sql, 'Params:', params);
+                console.error('DB all error:', error, 'SQL:', sql);
                 throw error;
             }
-        }
+        },
     };
 }
 
-function getLastInsertRowId() {
-    try {
-        const stmt = db.prepare('SELECT last_insert_rowid() as id');
-        stmt.step();
-        const result = stmt.getAsObject();
-        stmt.free();
-        console.log('Last insert row id:', result.id);
-        return result.id || 0;
-    } catch (error) {
-        console.error('Error getting last insert row id:', error);
-        return 0;
-    }
-}
-
-module.exports = {
-    initDatabase,
-    getDb,
-    prepare,
-    saveDatabase
-};
+module.exports = { initDatabase, getDb, prepare, saveDatabase };
