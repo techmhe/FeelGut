@@ -424,6 +424,37 @@ app.post('/api/entries', authenticateToken, (req, res) => {
     }
 });
 
+app.get('/api/entries/recent-items', authenticateToken, (req, res) => {
+    try {
+        const items = prepare(`
+            SELECT mi.id, mi.name, mi.item_type as itemType
+            FROM meal_items mi
+            JOIN entries e ON e.id = mi.entry_id
+            WHERE e.user_id = ?
+            AND mi.id IN (
+                SELECT MAX(mi2.id)
+                FROM meal_items mi2
+                JOIN entries e2 ON e2.id = mi2.entry_id
+                WHERE e2.user_id = ?
+                GROUP BY LOWER(mi2.name)
+            )
+            ORDER BY mi.id DESC
+            LIMIT 20
+        `).all(req.user.userId, req.user.userId);
+
+        for (const item of items) {
+            item.ingredients = prepare(`
+                SELECT name FROM item_ingredients WHERE item_id = ?
+            `).all(item.id).map(r => r.name);
+        }
+
+        res.json({ items });
+    } catch (error) {
+        console.error('Recent items error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 app.get('/api/entries/:id', authenticateToken, (req, res) => {
     try {
         const entryId = parseInt(req.params.id);
@@ -521,37 +552,6 @@ app.delete('/api/entries/:id', authenticateToken, (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Delete entry error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.get('/api/entries/recent-items', authenticateToken, (req, res) => {
-    try {
-        const items = prepare(`
-            SELECT mi.id, mi.name, mi.item_type as itemType
-            FROM meal_items mi
-            JOIN entries e ON e.id = mi.entry_id
-            WHERE e.user_id = ?
-            AND mi.id IN (
-                SELECT MAX(mi2.id)
-                FROM meal_items mi2
-                JOIN entries e2 ON e2.id = mi2.entry_id
-                WHERE e2.user_id = ?
-                GROUP BY LOWER(mi2.name)
-            )
-            ORDER BY mi.id DESC
-            LIMIT 20
-        `).all(req.user.userId, req.user.userId);
-
-        for (const item of items) {
-            item.ingredients = prepare(`
-                SELECT name FROM item_ingredients WHERE item_id = ?
-            `).all(item.id).map(r => r.name);
-        }
-
-        res.json({ items });
-    } catch (error) {
-        console.error('Recent items error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
