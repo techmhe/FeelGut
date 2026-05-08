@@ -424,6 +424,91 @@ app.post('/api/entries', authenticateToken, (req, res) => {
     }
 });
 
+app.get('/api/entries/:id', authenticateToken, (req, res) => {
+    try {
+        const entryId = parseInt(req.params.id);
+        if (isNaN(entryId)) return res.status(400).json({ error: 'Invalid entry id' });
+
+        const entry = prepare(`
+            SELECT id, type, meal_time as mealTime, description, date_time as dateTime
+            FROM entries WHERE id = ? AND user_id = ?
+        `).get(entryId, req.user.userId);
+        if (!entry) return res.status(404).json({ error: 'Entry not found' });
+
+        if (entry.type === 'meal') {
+            const items = prepare(`SELECT id, item_type as itemType, name FROM meal_items WHERE entry_id = ?`).all(entry.id);
+            for (const item of items) {
+                item.ingredients = prepare(`SELECT id, name FROM item_ingredients WHERE item_id = ?`).all(item.id);
+            }
+            entry.items = items;
+        } else if (entry.type === 'symptom') {
+            entry.symptoms = prepare(`SELECT id, symptom_id as symptomId, severity FROM entry_symptoms WHERE entry_id = ?`).all(entry.id);
+        } else if (entry.type === 'stool') {
+            const stool = prepare(`SELECT bss_type as bssType, blood, mucus, urgency, pain FROM stool_entries WHERE entry_id = ?`).get(entry.id);
+            if (stool) entry.stool = { bssType: stool.bssType, blood: stool.blood === 1, mucus: stool.mucus === 1, urgency: stool.urgency === 1, pain: stool.pain };
+        }
+
+        res.json({ entry });
+    } catch (error) {
+        console.error('Get entry error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/entries/:id', authenticateToken, (req, res) => {
+    try {
+        const entryId = parseInt(req.params.id);
+        if (isNaN(entryId)) return res.status(400).json({ error: 'Invalid entry id' });
+
+        const existing = prepare('SELECT id, type FROM entries WHERE id = ? AND user_id = ?').get(entryId, req.user.userId);
+        if (!existing) return res.status(404).json({ error: 'Entry not found' });
+
+        const { type, mealTime, description, dateTime, items, symptoms, stool } = req.body;
+
+        if (!type || !dateTime) return res.status(400).json({ error: 'Type and dateTime are required' });
+        if (!ALLOWED_ENTRY_TYPES.includes(type)) return res.status(400).json({ error: 'Invalid entry type' });
+        if (type !== existing.type) return res.status(400).json({ error: 'Cannot change entry type' });
+
+        if (description && (typeof description !== 'string' || description.length > 1000))
+            return res.status(400).json({ error: 'Description must be at most 1000 characters' });
+        if (type === 'meal' && (!items || items.length === 0))
+            return res.status(400).json({ error: 'A meal entry needs at least one item' });
+        if (type === 'symptom' && (!symptoms || symptoms.length === 0))
+            return res.status(400).json({ error: 'A symptom entry needs at least one symptom' });
+        if (type === 'stool') {
+            const bss = stool?.bssType;
+            if (!bss || bss < 1 || bss > 7) return res.status(400).json({ error: 'BSS type must be 1–7' });
+        }
+
+        prepare(`UPDATE entries SET meal_time = ?, description = ?, date_time = ? WHERE id = ?`)
+            .run(mealTime || null, description || null, dateTime, entryId);
+
+        if (type === 'meal') {
+            prepare('DELETE FROM meal_items WHERE entry_id = ?').run(entryId);
+            for (const item of items) {
+                const itemResult = prepare(`INSERT INTO meal_items (entry_id, item_type, name) VALUES (?, ?, ?)`).run(entryId, item.itemType, item.name);
+                for (const ing of item.ingredients ?? []) {
+                    prepare(`INSERT INTO item_ingredients (item_id, name) VALUES (?, ?)`).run(itemResult.lastInsertRowid, ing);
+                }
+            }
+        } else if (type === 'symptom') {
+            prepare('DELETE FROM entry_symptoms WHERE entry_id = ?').run(entryId);
+            for (const s of symptoms) {
+                prepare(`INSERT INTO entry_symptoms (entry_id, symptom_id, severity) VALUES (?, ?, ?)`).run(entryId, s.symptomId, s.severity || null);
+            }
+        } else if (type === 'stool') {
+            prepare('DELETE FROM stool_entries WHERE entry_id = ?').run(entryId);
+            prepare(`INSERT INTO stool_entries (entry_id, bss_type, blood, mucus, urgency, pain) VALUES (?, ?, ?, ?, ?, ?)`)
+                .run(entryId, stool.bssType, stool.blood ? 1 : 0, stool.mucus ? 1 : 0, stool.urgency ? 1 : 0, stool.pain || 'none');
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Update entry error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 app.delete('/api/entries/:id', authenticateToken, (req, res) => {
     try {
         const entryId = parseInt(req.params.id);

@@ -1,7 +1,12 @@
 <template>
   <div class="add-view">
     <header class="page-header">
-      <h1>Eintrag hinzufügen</h1>
+      <button class="back-btn" @click="$router.push('/log')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <h1>{{ editId ? 'Eintrag bearbeiten' : 'Eintrag hinzufügen' }}</h1>
     </header>
 
     <div class="glass-card">
@@ -251,6 +256,7 @@ export default {
       loading: false,
       error: '',
       success: false,
+      editId: null,
       // Stuhl
       stoolBssType: 4,
       stoolBlood:   false,
@@ -291,12 +297,22 @@ export default {
     } catch {
       // Nicht kritisch — Formular funktioniert auch ohne
     }
+
+    if (this.$route.params.id) {
+      this.editId = parseInt(this.$route.params.id)
+      await this.loadEntry()
+    }
   },
   methods: {
     nowLocal() {
       const now = new Date()
       const pad = n => String(n).padStart(2, '0')
       return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+    },
+    toLocalDatetime(isoStr) {
+      const d = new Date(isoStr)
+      const pad = n => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
     },
     guessedMealTime() {
       const h = new Date().getHours()
@@ -346,6 +362,36 @@ export default {
     removeItem(idx) {
       this.items.splice(idx, 1)
     },
+    async loadEntry() {
+      try {
+        const res = await fetch(`/api/entries/${this.editId}`, { credentials: 'include' })
+        if (!res.ok) { this.$router.push('/log'); return }
+        const { entry } = await res.json()
+
+        this.type     = entry.type
+        this.dateTime = this.toLocalDatetime(entry.dateTime)
+
+        if (entry.type === 'meal') {
+          this.mealTime = entry.mealTime ?? 'morning'
+          this.items = (entry.items ?? []).map(item => ({
+            itemType: item.itemType,
+            name: item.name,
+            ingredients: (item.ingredients ?? []).map(i => i.name),
+          }))
+        } else if (entry.type === 'symptom') {
+          this.symptomItems = entry.symptoms ?? []
+          this.description  = entry.description ?? ''
+        } else if (entry.type === 'stool' && entry.stool) {
+          this.stoolBssType = entry.stool.bssType
+          this.stoolBlood   = entry.stool.blood
+          this.stoolMucus   = entry.stool.mucus
+          this.stoolUrgency = entry.stool.urgency
+          this.stoolPain    = entry.stool.pain
+        }
+      } catch {
+        this.$router.push('/log')
+      }
+    },
     bssInfo(type) {
       const map = {
         1: { label: 'Schwere Verstopfung',  cls: 'bss-bad',     text: 'Einzelne harte Klümpchen, wie Nüsse — sehr schwer auszuscheiden' },
@@ -384,8 +430,10 @@ export default {
             },
           }),
         }
-        const res = await fetch('/api/entries', {
-          method: 'POST',
+        const url    = this.editId ? `/api/entries/${this.editId}` : '/api/entries'
+        const method = this.editId ? 'PUT' : 'POST'
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify(payload),
@@ -421,12 +469,34 @@ export default {
   margin: 0 auto;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
 .page-header h1 {
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.5px;
-  margin-bottom: 1.25rem;
 }
+
+.back-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.back-btn:hover { background: rgba(255,255,255,0.18); }
+.back-btn svg { width: 20px; height: 20px; }
 
 .glass-card {
   background: rgba(255, 255, 255, 0.12);

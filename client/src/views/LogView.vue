@@ -26,6 +26,21 @@
             {{ entry.type === 'meal' ? mealTimeLabel(entry.mealTime) : entry.type === 'stool' ? '🚽 Stuhl' : '💊 Symptom' }}
           </span>
           <span class="entry-date">{{ formatDate(entry.dateTime) }}</span>
+          <div class="action-btns">
+            <button class="edit-btn" @click="$router.push('/edit/' + entry.id)" aria-label="Bearbeiten">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="delete-btn" @click="deleteEntry(entry.id)" aria-label="Löschen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Mahlzeit: Items mit Zutaten -->
@@ -65,13 +80,6 @@
           <p class="bss-desc-text">{{ bssLabel(entry.stool.bssType) }}</p>
         </template>
 
-        <button class="delete-btn" @click="deleteEntry(entry.id)" aria-label="Löschen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6M14 11v6"/>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -267,9 +275,8 @@ export default {
 .entry-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
-  padding-right: 1.5rem;
 }
 
 .entry-badge {
@@ -343,10 +350,15 @@ export default {
   line-height: 1.4;
 }
 
+.action-btns {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.edit-btn,
 .delete-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -355,10 +367,10 @@ export default {
   transition: color 0.2s;
 }
 
-.delete-btn:hover {
-  color: rgba(248, 113, 113, 0.8);
-}
+.edit-btn:hover   { color: rgba(147, 197, 253, 0.9); }
+.delete-btn:hover { color: rgba(248, 113, 113, 0.8); }
 
+.edit-btn svg,
 .delete-btn svg {
   width: 16px;
   height: 16px;

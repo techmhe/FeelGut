@@ -10,6 +10,7 @@ const routes = [
   { path: '/login', component: LoginView, meta: { public: true } },
   { path: '/log', component: LogView },
   { path: '/add', component: AddEntryView },
+  { path: '/edit/:id', component: AddEntryView },
   { path: '/settings', component: SettingsView },
   { path: '/export', component: ExportView },
 ]
