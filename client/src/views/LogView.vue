@@ -1,7 +1,7 @@
 <template>
   <div class="log-view">
     <header class="page-header">
-      <h1>Mein Log</h1>
+      <h1>Mein Tagebuch</h1>
     </header>
 
     <div class="filter-bar">
@@ -15,71 +15,99 @@
       </button>
     </div>
 
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        v-model="searchQuery"
+        class="search-input"
+        type="search"
+        placeholder="Suchen…"
+      />
+      <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">✕</button>
+    </div>
+
     <div class="entries-list" v-if="filteredEntries.length > 0">
-      <div
-        v-for="entry in filteredEntries"
-        :key="entry.id"
-        :class="['entry-card', entry.type]"
-      >
-        <div class="entry-top">
-          <span class="entry-badge">
-            {{ entry.type === 'meal' ? mealTimeLabel(entry.mealTime) : entry.type === 'stool' ? '🚽 Stuhl' : '💊 Symptom' }}
+      <div class="day-group" v-for="group in groupedEntries" :key="group.date">
+        <div class="day-header-wrap">
+          <span class="day-header">{{ group.date }}</span>
+          <span class="day-summary">
+            <span v-if="group.meals">{{ group.meals }} {{ group.meals === 1 ? 'Mahlzeit' : 'Mahlzeiten' }}</span>
+            <span v-if="group.meals && (group.symptoms || group.stools)" class="dot">·</span>
+            <span v-if="group.symptoms">{{ group.symptoms }} {{ group.symptoms === 1 ? 'Symptom' : 'Symptome' }}</span>
+            <span v-if="group.symptoms && group.stools" class="dot">·</span>
+            <span v-if="group.stools">{{ group.stools }} {{ group.stools === 1 ? 'Stuhlgang' : 'Stuhlgänge' }}</span>
           </span>
-          <span class="entry-date">{{ formatDate(entry.dateTime) }}</span>
-          <div class="action-btns">
-            <button class="edit-btn" @click="$router.push('/edit/' + entry.id)" aria-label="Bearbeiten">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-            <button class="delete-btn" @click="deleteEntry(entry.id)" aria-label="Löschen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14H6L5 6"/>
-                <path d="M10 11v6M14 11v6"/>
-              </svg>
-            </button>
-          </div>
         </div>
 
-        <!-- Mahlzeit: Items mit Zutaten -->
-        <template v-if="entry.type === 'meal' && entry.items">
-          <div class="meal-item" v-for="item in entry.items" :key="item.id">
-            <span class="meal-item-name">
-              {{ item.itemType === 'food' ? '🍎' : '🥤' }} {{ item.name }}
-            </span>
-            <div class="ingredient-tags" v-if="item.ingredients && item.ingredients.length > 0">
-              <span class="tag" v-for="ing in item.ingredients" :key="ing.id">{{ ing.name }}</span>
+        <div class="day-entries">
+          <div
+            v-for="entry in group.entries"
+            :key="entry.id"
+            :class="['entry-card', entry.type]"
+          >
+            <div class="entry-top">
+              <span class="entry-badge">
+                {{ entry.type === 'meal' ? mealTimeLabel(entry.mealTime) : entry.type === 'stool' ? '🚽 Stuhl' : '💊 Symptom' }}
+              </span>
+              <span class="entry-date">{{ formatDate(entry.dateTime) }}</span>
+              <div class="action-btns">
+                <button class="edit-btn" @click="$router.push('/edit/' + entry.id)" aria-label="Bearbeiten">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="delete-btn" @click="deleteEntry(entry.id)" aria-label="Löschen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-        </template>
 
-        <!-- Symptom -->
-        <template v-if="entry.type === 'symptom'">
-          <div class="symptom-row" v-for="s in entry.symptoms" :key="s.id">
-            <p class="entry-name">{{ symptomName(s.symptomId) }}</p>
-            <span v-if="s.severity" :class="['severity-badge', s.severity]">
-              {{ { mild: 'Leicht', moderate: 'Mittel', severe: 'Stark' }[s.severity] }}
-            </span>
-          </div>
-          <p class="entry-desc" v-if="entry.description">{{ entry.description }}</p>
-        </template>
+            <!-- Mahlzeit: Items mit Zutaten -->
+            <template v-if="entry.type === 'meal' && entry.items">
+              <div class="meal-item" v-for="item in entry.items" :key="item.id">
+                <span class="meal-item-name">
+                  {{ item.itemType === 'food' ? '🍎' : '🥤' }} {{ item.name }}
+                </span>
+                <div class="ingredient-tags" v-if="item.ingredients && item.ingredients.length > 0">
+                  <span class="tag" v-for="ing in item.ingredients" :key="ing.id">{{ ing.name }}</span>
+                </div>
+              </div>
+            </template>
 
-        <!-- Stuhl -->
-        <template v-if="entry.type === 'stool' && entry.stool">
-          <div class="stool-row">
-            <span class="bss-badge" :class="bssCls(entry.stool.bssType)">Typ {{ entry.stool.bssType }}</span>
-            <span class="stool-tag blood"   v-if="entry.stool.blood">Blut</span>
-            <span class="stool-tag mucus"   v-if="entry.stool.mucus">Schleim</span>
-            <span class="stool-tag urgency" v-if="entry.stool.urgency">Dringend</span>
-            <span class="stool-tag pain"    v-if="entry.stool.pain !== 'none'">
-              {{ entry.stool.pain === 'mild' ? 'Leichte Schmerzen' : 'Starke Schmerzen' }}
-            </span>
-          </div>
-          <p class="bss-desc-text">{{ bssLabel(entry.stool.bssType) }}</p>
-        </template>
+            <!-- Symptom -->
+            <template v-if="entry.type === 'symptom'">
+              <div class="symptom-row" v-for="s in entry.symptoms" :key="s.id">
+                <p class="entry-name">{{ symptomName(s.symptomId) }}</p>
+                <span v-if="s.severity" :class="['severity-badge', s.severity]">
+                  {{ { mild: 'Leicht', moderate: 'Mittel', severe: 'Stark' }[s.severity] }}
+                </span>
+              </div>
+              <p class="entry-desc" v-if="entry.description">{{ entry.description }}</p>
+            </template>
 
+            <!-- Stuhl -->
+            <template v-if="entry.type === 'stool' && entry.stool">
+              <div class="stool-row">
+                <span class="bss-badge" :class="bssCls(entry.stool.bssType)">Typ {{ entry.stool.bssType }}</span>
+                <span class="stool-tag blood"   v-if="entry.stool.blood">Blut</span>
+                <span class="stool-tag mucus"   v-if="entry.stool.mucus">Schleim</span>
+                <span class="stool-tag urgency" v-if="entry.stool.urgency">Dringend</span>
+                <span class="stool-tag pain"    v-if="entry.stool.pain !== 'none'">
+                  {{ entry.stool.pain === 'mild' ? 'Leichte Schmerzen' : 'Starke Schmerzen' }}
+                </span>
+              </div>
+              <p class="bss-desc-text">{{ bssLabel(entry.stool.bssType) }}</p>
+            </template>
+
+          </div>
+        </div>
       </div>
     </div>
 
@@ -87,7 +115,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
       </svg>
-      <p>Noch keine Einträge. Fang an deine Gesundheit zu tracken!</p>
+      <p>{{ searchQuery ? 'Keine Einträge gefunden.' : 'Noch keine Einträge. Fang an deine Gesundheit zu tracken!' }}</p>
     </div>
 
     <div class="loading" v-if="loading">Laden…</div>
@@ -103,6 +131,7 @@ export default {
       symptoms: [],
       loading: false,
       activeFilter: 'all',
+      searchQuery: '',
       filters: [
         { value: 'all', label: 'Alle' },
         { value: 'meal', label: '🍽️ Mahlzeiten' },
@@ -113,8 +142,42 @@ export default {
   },
   computed: {
     filteredEntries() {
-      if (this.activeFilter === 'all') return this.entries
-      return this.entries.filter(e => e.type === this.activeFilter)
+      let result = this.activeFilter === 'all' ? this.entries : this.entries.filter(e => e.type === this.activeFilter)
+      const q = this.searchQuery.trim().toLowerCase()
+      if (!q) return result
+      return result.filter(entry => {
+        if (entry.type === 'meal' && entry.items) {
+          return entry.items.some(item =>
+            item.name.toLowerCase().includes(q) ||
+            (item.ingredients && item.ingredients.some(ing => ing.name.toLowerCase().includes(q)))
+          )
+        }
+        if (entry.type === 'symptom' && entry.symptoms) {
+          return entry.symptoms.some(s => this.symptomName(s.symptomId).toLowerCase().includes(q))
+        }
+        if (entry.type === 'stool') {
+          return ['stuhl', 'blut', 'schleim', 'dringend', 'schmerz'].some(t => t.includes(q))
+        }
+        return false
+      })
+    },
+    groupedEntries() {
+      const groups = []
+      let currentKey = null
+      for (const entry of this.filteredEntries) {
+        const d = new Date(entry.dateTime)
+        const key = d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+        if (key !== currentKey) {
+          groups.push({ date: key, entries: [], meals: 0, symptoms: 0, stools: 0 })
+          currentKey = key
+        }
+        const g = groups[groups.length - 1]
+        g.entries.push(entry)
+        if (entry.type === 'meal') g.meals++
+        else if (entry.type === 'symptom') g.symptoms++
+        else if (entry.type === 'stool') g.stools++
+      }
+      return groups
     },
   },
   async created() {
@@ -179,7 +242,7 @@ export default {
     },
     formatDate(iso) {
       const d = new Date(iso)
-      return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'
     },
   },
 }
@@ -205,7 +268,8 @@ export default {
 .filter-bar {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
@@ -229,7 +293,112 @@ export default {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
+/* ── Suchfeld ── */
+.search-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.7rem 2.5rem 0.7rem 2.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.search-input:focus {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.search-input::-webkit-search-cancel-button { display: none; }
+
+.search-clear {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.search-clear:hover { color: rgba(255, 255, 255, 0.7); }
+
+/* ── Tag-Gruppen ── */
 .entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.day-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.25rem;
+  background: linear-gradient(to bottom, rgba(15, 10, 30, 0.85) 70%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.day-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.day-summary {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.day-summary .dot {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.day-entries {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
