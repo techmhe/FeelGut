@@ -284,6 +284,13 @@ export default {
         byDay[key].push(entry)
       }
 
+      const contentMaxW = COL[3] - PAD * 2
+      const wrapLine = (text) => {
+        doc.setFontSize(8.5)
+        doc.setFont('helvetica', 'normal')
+        return doc.splitTextToSize(text, contentMaxW)
+      }
+
       let shade = false
 
       for (const [day, dayEntries] of Object.entries(byDay)) {
@@ -311,18 +318,20 @@ export default {
             const contentLines = []
             for (const item of entry.items ?? []) {
               const prefix = item.itemType === 'food' ? 'Essen: ' : 'Trinken: '
-              const ings = (item.ingredients ?? []).map(i => i.name).join(', ')
-              contentLines.push(prefix + item.name)
-              if (ings) contentLines.push('  ' + ings)
+              contentLines.push(...wrapLine(prefix + item.name))
+              for (const ing of item.ingredients ?? []) {
+                contentLines.push(...wrapLine('  · ' + ing.name))
+              }
             }
             drawRow(time, this.mealTimeLabel(entry.mealTime), 'Lebensmittel', contentLines, shade)
           } else {
             const sevLabel = { mild: 'Leicht', moderate: 'Mittel', severe: 'Stark' }
-            const contentLines = (entry.symptoms ?? []).map(s => {
+            const contentLines = []
+            for (const s of entry.symptoms ?? []) {
               const sev = sevLabel[s.severity] ? ` (${sevLabel[s.severity]})` : ''
-              return this.symptomName(s.symptomId) + sev
-            })
-            if (entry.description) contentLines.push(entry.description)
+              contentLines.push(...wrapLine(this.symptomName(s.symptomId) + sev))
+            }
+            if (entry.description) contentLines.push(...wrapLine(entry.description))
             drawRow(time, '', 'Symptom', contentLines, shade)
           }
 

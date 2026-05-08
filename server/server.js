@@ -456,7 +456,7 @@ app.get('/api/symptoms', (req, res) => {
 });
 
 // Serve built frontend
-const publicDir = path.join(__dirname, 'public');
+const publicDir = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(publicDir)) {
     app.use(express.static(publicDir));
     app.get('*', (req, res) => {

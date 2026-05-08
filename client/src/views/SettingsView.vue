@@ -51,7 +51,7 @@
     <div class="glass-card about-card">
       <div class="about-title">Über FeelGut</div>
       <p class="about-text">FeelGut hilft dir, deine Ernährung und Symptome zu tracken, um deine Verdauungsgesundheit besser zu verstehen.</p>
-      <p class="version">Version 2.0.0</p>
+      <p class="version">Version 1.0.1</p>
     </div>
 
   </div>

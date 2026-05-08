@@ -12,7 +12,7 @@ WORKDIR /app/server
 COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/ ./
-COPY --from=frontend-build /app/client/dist ./public
+COPY --from=frontend-build /app/client/dist /app/client/dist
 
 EXPOSE 3000
 CMD ["node", "server.js"]
