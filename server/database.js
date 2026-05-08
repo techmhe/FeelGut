@@ -78,6 +78,19 @@ async function initDatabase() {
     `);
 
     db.run(`
+        CREATE TABLE IF NOT EXISTS stool_entries (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id  INTEGER NOT NULL,
+            bss_type  INTEGER NOT NULL,
+            blood     INTEGER NOT NULL DEFAULT 0,
+            mucus     INTEGER NOT NULL DEFAULT 0,
+            urgency   INTEGER NOT NULL DEFAULT 0,
+            pain      TEXT NOT NULL DEFAULT 'none',
+            FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+        );
+    `);
+
+    db.run(`
         CREATE TABLE IF NOT EXISTS symptoms (
             id      TEXT PRIMARY KEY,
             name_en TEXT NOT NULL,

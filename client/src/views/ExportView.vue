@@ -152,8 +152,9 @@ export default {
     // ── CSV ──────────────────────────────────────────────
     exportCSV() {
       const severityLabel = { mild: 'Leicht', moderate: 'Mittel', severe: 'Stark' }
+      const painLabel = { none: 'Keine', mild: 'Leicht', severe: 'Stark' }
       const rows = [
-        ['Datum', 'Uhrzeit', 'Typ', 'Tageszeit', 'Kategorie', 'Name', 'Zutaten', 'Symptom', 'Schweregrad', 'Beschreibung'],
+        ['Datum', 'Uhrzeit', 'Typ', 'Tageszeit', 'Kategorie', 'Name', 'Zutaten', 'Symptom', 'Schweregrad', 'Beschreibung', 'BSS-Typ', 'Blut', 'Schleim', 'Dringend', 'Schmerzen'],
       ]
 
       for (const entry of this.filteredEntries) {
@@ -168,18 +169,29 @@ export default {
               item.itemType === 'food' ? 'Essen' : 'Trinken',
               item.name,
               (item.ingredients ?? []).map(i => i.name).join('; '),
-              '', '', '',
+              '', '', '', '', '', '', '', '',
             ])
           }
-        } else {
+        } else if (entry.type === 'symptom') {
           for (const s of entry.symptoms ?? []) {
             rows.push([
               date, time, 'Symptom', '', '', '', '',
               this.symptomName(s.symptomId),
               severityLabel[s.severity] ?? '',
               entry.description ?? '',
+              '', '', '', '', '',
             ])
           }
+        } else if (entry.type === 'stool' && entry.stool) {
+          const { bssType, blood, mucus, urgency, pain } = entry.stool
+          rows.push([
+            date, time, 'Stuhl', '', '', '', '', '', '', '',
+            bssType,
+            blood   ? 'Ja' : 'Nein',
+            mucus   ? 'Ja' : 'Nein',
+            urgency ? 'Ja' : 'Nein',
+            painLabel[pain] ?? '',
+          ])
         }
       }
 
@@ -324,7 +336,7 @@ export default {
               }
             }
             drawRow(time, this.mealTimeLabel(entry.mealTime), 'Lebensmittel', contentLines, shade)
-          } else {
+          } else if (entry.type === 'symptom') {
             const sevLabel = { mild: 'Leicht', moderate: 'Mittel', severe: 'Stark' }
             const contentLines = []
             for (const s of entry.symptoms ?? []) {
@@ -333,6 +345,20 @@ export default {
             }
             if (entry.description) contentLines.push(...wrapLine(entry.description))
             drawRow(time, '', 'Symptom', contentLines, shade)
+          } else if (entry.type === 'stool' && entry.stool) {
+            const { bssType, blood, mucus, urgency, pain } = entry.stool
+            const painLabel = { none: '', mild: 'Leichte Schmerzen', severe: 'Starke Schmerzen' }
+            const flags = [
+              blood   ? 'Blut'    : null,
+              mucus   ? 'Schleim' : null,
+              urgency ? 'Dringend': null,
+              painLabel[pain] || null,
+            ].filter(Boolean)
+            const contentLines = [
+              ...wrapLine(`Typ ${bssType} — ${this.bssLabelShort(bssType)}`),
+              ...(flags.length ? wrapLine(flags.join(' · ')) : []),
+            ]
+            drawRow(time, '', 'Stuhl', contentLines, shade)
           }
 
           shade = !shade
@@ -344,6 +370,13 @@ export default {
       doc.save(`feelgut-${this.rangeSlug()}.pdf`)
     },
 
+    bssLabelShort(type) {
+      return {
+        1: 'Schwere Verstopfung', 2: 'Leichte Verstopfung',
+        3: 'Normal', 4: 'Normal (Idealform)',
+        5: 'Zu wenig Ballaststoffe', 6: 'Leichter Durchfall', 7: 'Starker Durchfall',
+      }[type] ?? ''
+    },
     rangeLabel() {
       const labels = { all: 'Alle Einträge', today: 'Heute', week: 'Letzte Woche', month: 'Letzter Monat', custom: 'Benutzerdefiniert' }
       return labels[this.range] ?? ''

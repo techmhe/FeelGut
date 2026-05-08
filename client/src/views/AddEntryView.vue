@@ -17,6 +17,9 @@
             <button type="button" :class="['type-btn', { active: type === 'symptom' }]" @click="type = 'symptom'">
               💊 Symptom
             </button>
+            <button type="button" :class="['type-btn', { active: type === 'stool' }]" @click="type = 'stool'">
+              🚽 Stuhl
+            </button>
           </div>
         </div>
 
@@ -159,6 +162,60 @@
           </div>
         </template>
 
+        <!-- === STUHL === -->
+        <template v-if="type === 'stool'">
+
+          <!-- BSS Slider -->
+          <div class="field">
+            <label>Bristol Stuhl Skala</label>
+            <div class="bss-slider-wrap">
+              <div class="bss-value-row">
+                <span class="bss-number">Typ {{ stoolBssType }}</span>
+              </div>
+              <input
+                type="range"
+                min="1" max="7"
+                v-model.number="stoolBssType"
+                class="bss-slider"
+              />
+              <div class="bss-ticks">
+                <span v-for="n in 7" :key="n" :class="{ active: stoolBssType === n }">{{ n }}</span>
+              </div>
+            </div>
+            <div class="bss-description">
+              <span class="bss-label" :class="bssInfo(stoolBssType).cls">{{ bssInfo(stoolBssType).label }}</span>
+              <span class="bss-text">{{ bssInfo(stoolBssType).text }}</span>
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="field">
+            <label>Begleiterscheinungen</label>
+            <div class="toggle-list">
+              <button type="button" :class="['toggle-btn', { active: stoolBlood }]"   @click="stoolBlood   = !stoolBlood">
+                <span class="toggle-dot blood"></span> Blut
+              </button>
+              <button type="button" :class="['toggle-btn', { active: stoolMucus }]"   @click="stoolMucus   = !stoolMucus">
+                <span class="toggle-dot mucus"></span> Schleim
+              </button>
+              <button type="button" :class="['toggle-btn', { active: stoolUrgency }]" @click="stoolUrgency = !stoolUrgency">
+                <span class="toggle-dot urgency"></span> Dringend
+              </button>
+            </div>
+          </div>
+
+          <!-- Schmerzen -->
+          <div class="field">
+            <label>Schmerzen</label>
+            <div class="type-toggle">
+              <button type="button" :class="['type-btn', 'severity-mild',     { active: stoolPain === 'none' }]"   @click="stoolPain = 'none'">Keine</button>
+              <button type="button" :class="['type-btn', 'severity-moderate', { active: stoolPain === 'mild' }]"   @click="stoolPain = 'mild'">Leicht</button>
+              <button type="button" :class="['type-btn', 'severity-severe',   { active: stoolPain === 'severe' }]" @click="stoolPain = 'severe'">Stark</button>
+            </div>
+          </div>
+
+        </template>
+
         <p class="msg error" v-if="error">{{ error }}</p>
         <p class="msg success" v-if="success">Gespeichert!</p>
 
@@ -194,6 +251,12 @@ export default {
       loading: false,
       error: '',
       success: false,
+      // Stuhl
+      stoolBssType: 4,
+      stoolBlood:   false,
+      stoolMucus:   false,
+      stoolUrgency: false,
+      stoolPain:    'none',
     }
   },
   computed: {
@@ -207,6 +270,7 @@ export default {
     canSubmit() {
       if (this.type === 'meal') return this.items.length > 0 && !this.addingItemType
       if (this.type === 'symptom') return this.symptomItems.length > 0 && !this.addingSymptom
+      if (this.type === 'stool') return true
       return false
     },
   },
@@ -282,6 +346,18 @@ export default {
     removeItem(idx) {
       this.items.splice(idx, 1)
     },
+    bssInfo(type) {
+      const map = {
+        1: { label: 'Schwere Verstopfung',  cls: 'bss-bad',     text: 'Einzelne harte Klümpchen, wie Nüsse — sehr schwer auszuscheiden' },
+        2: { label: 'Leichte Verstopfung',  cls: 'bss-bad',     text: 'Wurstförmig, aber klumpig' },
+        3: { label: 'Normal',               cls: 'bss-ok',      text: 'Wurstförmig mit rissiger Oberfläche' },
+        4: { label: 'Normal (Idealform)',   cls: 'bss-ok',      text: 'Glatt, weich, wurstförmig oder schlangenförmig' },
+        5: { label: 'Zu wenig Ballaststoffe', cls: 'bss-warn', text: 'Weiche Klümpchen mit klaren Rändern — leicht auszuscheiden' },
+        6: { label: 'Leichter Durchfall',   cls: 'bss-warn',    text: 'Lockere, fluffige Stücke mit ausgefransten Rändern' },
+        7: { label: 'Starker Durchfall',    cls: 'bss-bad',     text: 'Wässrig, keine festen Bestandteile — vollständig flüssig' },
+      }
+      return map[type] ?? map[4]
+    },
     async submit() {
       this.error = ''
       this.success = false
@@ -298,6 +374,15 @@ export default {
             symptoms: this.symptomItems,
             description: this.description,
           }),
+          ...(this.type === 'stool' && {
+            stool: {
+              bssType: this.stoolBssType,
+              blood:   this.stoolBlood,
+              mucus:   this.stoolMucus,
+              urgency: this.stoolUrgency,
+              pain:    this.stoolPain,
+            },
+          }),
         }
         const res = await fetch('/api/entries', {
           method: 'POST',
@@ -311,6 +396,11 @@ export default {
         this.items = []
         this.description = ''
         this.symptomItems = []
+        this.stoolBssType = 4
+        this.stoolBlood   = false
+        this.stoolMucus   = false
+        this.stoolUrgency = false
+        this.stoolPain    = 'none'
         this.dateTime = this.nowLocal()
         this.mealTime = this.guessedMealTime()
         setTimeout(() => this.$router.push('/log'), 800)
@@ -663,4 +753,113 @@ export default {
 .submit-btn:hover:not(:disabled) { background: rgba(255,255,255,0.28); }
 .submit-btn:active { transform: scale(0.98); }
 .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── BSS Slider ── */
+.bss-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bss-value-row {
+  display: flex;
+  justify-content: center;
+}
+
+.bss-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.bss-slider {
+  width: 100%;
+  accent-color: rgba(255,255,255,0.8);
+  height: 6px;
+  cursor: pointer;
+}
+
+.bss-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.bss-ticks span {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.35);
+  transition: color 0.15s;
+}
+
+.bss-ticks span.active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bss-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+}
+
+.bss-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.bss-label.bss-ok   { color: #86efac; }
+.bss-label.bss-warn { color: #fde68a; }
+.bss-label.bss-bad  { color: #fca5a5; }
+
+.bss-text {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.4;
+}
+
+/* ── Toggle-Buttons ── */
+.toggle-list {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.toggle-btn.active {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.6);
+  color: #fff;
+}
+
+.toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.toggle-dot.blood   { background: #fca5a5; }
+.toggle-dot.mucus   { background: #fde68a; }
+.toggle-dot.urgency { background: #93c5fd; }
 </style>

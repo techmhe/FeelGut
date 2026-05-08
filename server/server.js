@@ -272,7 +272,7 @@ app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
 // ENTRIES ROUTES
 // ============================================
 
-const ALLOWED_ENTRY_TYPES = ['meal', 'symptom'];
+const ALLOWED_ENTRY_TYPES = ['meal', 'symptom', 'stool'];
 const ALLOWED_MEAL_TIMES = ['morning', 'noon', 'evening', 'snack', null, undefined];
 const ALLOWED_SEVERITIES = ['mild', 'moderate', 'severe', null, undefined];
 
@@ -305,6 +305,20 @@ app.get('/api/entries', authenticateToken, (req, res) => {
                     SELECT id, symptom_id as symptomId, severity
                     FROM entry_symptoms WHERE entry_id = ?
                 `).all(entry.id);
+            } else if (entry.type === 'stool') {
+                const stool = prepare(`
+                    SELECT bss_type as bssType, blood, mucus, urgency, pain
+                    FROM stool_entries WHERE entry_id = ?
+                `).get(entry.id);
+                if (stool) {
+                    entry.stool = {
+                        bssType:  stool.bssType,
+                        blood:    stool.blood   === 1,
+                        mucus:    stool.mucus   === 1,
+                        urgency:  stool.urgency === 1,
+                        pain:     stool.pain,
+                    };
+                }
             }
         }
 
@@ -336,6 +350,14 @@ app.post('/api/entries', authenticateToken, (req, res) => {
         }
         if (type === 'symptom' && (!req.body.symptoms || req.body.symptoms.length === 0)) {
             return res.status(400).json({ error: 'A symptom entry needs at least one symptom' });
+        }
+        if (type === 'stool') {
+            const bss = req.body.stool?.bssType;
+            if (!bss || bss < 1 || bss > 7) return res.status(400).json({ error: 'BSS type must be 1–7' });
+            const validPain = ['none', 'mild', 'severe'];
+            if (req.body.stool?.pain && !validPain.includes(req.body.stool.pain)) {
+                return res.status(400).json({ error: 'Invalid pain value' });
+            }
         }
 
         // Validate meal items
@@ -385,6 +407,14 @@ app.post('/api/entries', authenticateToken, (req, res) => {
                     INSERT INTO entry_symptoms (entry_id, symptom_id, severity) VALUES (?, ?, ?)
                 `).run(entryId, s.symptomId, s.severity || null);
             }
+        }
+
+        if (type === 'stool' && req.body.stool) {
+            const { bssType, blood, mucus, urgency, pain } = req.body.stool;
+            prepare(`
+                INSERT INTO stool_entries (entry_id, bss_type, blood, mucus, urgency, pain)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `).run(entryId, bssType, blood ? 1 : 0, mucus ? 1 : 0, urgency ? 1 : 0, pain || 'none');
         }
 
         res.json({ success: true, entryId });

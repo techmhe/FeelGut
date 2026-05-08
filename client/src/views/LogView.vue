@@ -23,7 +23,7 @@
       >
         <div class="entry-top">
           <span class="entry-badge">
-            {{ entry.type === 'meal' ? mealTimeLabel(entry.mealTime) : '💊 Symptom' }}
+            {{ entry.type === 'meal' ? mealTimeLabel(entry.mealTime) : entry.type === 'stool' ? '🚽 Stuhl' : '💊 Symptom' }}
           </span>
           <span class="entry-date">{{ formatDate(entry.dateTime) }}</span>
         </div>
@@ -49,6 +49,20 @@
             </span>
           </div>
           <p class="entry-desc" v-if="entry.description">{{ entry.description }}</p>
+        </template>
+
+        <!-- Stuhl -->
+        <template v-if="entry.type === 'stool' && entry.stool">
+          <div class="stool-row">
+            <span class="bss-badge" :class="bssCls(entry.stool.bssType)">Typ {{ entry.stool.bssType }}</span>
+            <span class="stool-tag blood"   v-if="entry.stool.blood">Blut</span>
+            <span class="stool-tag mucus"   v-if="entry.stool.mucus">Schleim</span>
+            <span class="stool-tag urgency" v-if="entry.stool.urgency">Dringend</span>
+            <span class="stool-tag pain"    v-if="entry.stool.pain !== 'none'">
+              {{ entry.stool.pain === 'mild' ? 'Leichte Schmerzen' : 'Starke Schmerzen' }}
+            </span>
+          </div>
+          <p class="bss-desc-text">{{ bssLabel(entry.stool.bssType) }}</p>
         </template>
 
         <button class="delete-btn" @click="deleteEntry(entry.id)" aria-label="Löschen">
@@ -85,6 +99,7 @@ export default {
         { value: 'all', label: 'Alle' },
         { value: 'meal', label: '🍽️ Mahlzeiten' },
         { value: 'symptom', label: '💊 Symptome' },
+        { value: 'stool', label: '🚽 Stuhl' },
       ],
     }
   },
@@ -110,6 +125,22 @@ export default {
     symptomName(id) {
       const s = this.symptoms.find(s => s.id === id)
       return s ? (s.de || s.en) : id
+    },
+    bssLabel(type) {
+      return {
+        1: 'Einzelne harte Klümpchen — schwere Verstopfung',
+        2: 'Wurstförmig, klumpig — leichte Verstopfung',
+        3: 'Wurstförmig mit Rissen — normal',
+        4: 'Glatt und weich — Idealform',
+        5: 'Weiche Klümpchen — zu wenig Ballaststoffe',
+        6: 'Lockere Stücke — leichter Durchfall',
+        7: 'Wässrig, keine festen Teile — starker Durchfall',
+      }[type] ?? ''
+    },
+    bssCls(type) {
+      if (type <= 2 || type === 7) return 'bss-bad'
+      if (type >= 5) return 'bss-warn'
+      return 'bss-ok'
     },
     mealTimeLabel(mealTime) {
       return { morning: '🌅 Morgens', noon: '☀️ Mittags', evening: '🌙 Abends' }[mealTime] ?? '🍽️ Mahlzeit'
@@ -227,6 +258,10 @@ export default {
 
 .entry-card.symptom::before {
   background: linear-gradient(180deg, #f87171, #ef4444);
+}
+
+.entry-card.stool::before {
+  background: linear-gradient(180deg, #a78bfa, #7c3aed);
 }
 
 .entry-top {
@@ -350,5 +385,44 @@ export default {
   text-align: center;
   padding: 2rem;
   color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Stuhl-Karte ── */
+.stool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.bss-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.bss-badge.bss-ok   { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.5); color: #86efac; }
+.bss-badge.bss-warn { background: rgba(251,191,36,0.15);  border-color: rgba(251,191,36,0.5); color: #fde68a; }
+.bss-badge.bss-bad  { background: rgba(248,113,113,0.15); border-color: rgba(248,113,113,0.5); color: #fca5a5; }
+
+.stool-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.stool-tag.blood   { background: rgba(248,113,113,0.15); border-color: rgba(248,113,113,0.4); color: #fca5a5; }
+.stool-tag.mucus   { background: rgba(251,191,36,0.15);  border-color: rgba(251,191,36,0.4); color: #fde68a; }
+.stool-tag.urgency { background: rgba(147,197,253,0.15); border-color: rgba(147,197,253,0.4); color: #93c5fd; }
+.stool-tag.pain    { background: rgba(167,139,250,0.15); border-color: rgba(167,139,250,0.4); color: #c4b5fd; }
+
+.bss-desc-text {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.3;
 }
 </style>
