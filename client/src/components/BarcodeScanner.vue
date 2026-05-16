@@ -34,24 +34,31 @@ export default {
   data() {
     return {
       error: '',
-      controls: null,
+      stream: null,
+      loopId: null,
+      reader: null,
+      canvas: null,
+      ctx: null,
     }
   },
   async mounted() {
-    const reader = new BrowserMultiFormatReader()
     try {
-      this.controls = await reader.decodeFromConstraints(
-        { video: { facingMode: { ideal: 'environment' } } },
-        this.$refs.video,
-        (result) => {
-          if (result) {
-            this.controls?.stop()
-            this.$emit('scan', result.getText())
-          }
-        }
-      )
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+      })
+      const video = this.$refs.video
+      video.srcObject = this.stream
+
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('timeout')), 10000)
+        video.addEventListener('playing', () => { clearTimeout(timeout); resolve() }, { once: true })
+        video.play().catch(reject)
+      })
+
+      this.reader = new BrowserMultiFormatReader()
+      this.scheduleNextDecode()
     } catch (e) {
-      if (e.name === 'NotAllowedError') {
+      if (e?.name === 'NotAllowedError') {
         this.error = 'Kamerazugriff verweigert — bitte in den Einstellungen erlauben.'
       } else {
         this.error = 'Kamera konnte nicht gestartet werden.'
@@ -59,7 +66,41 @@ export default {
     }
   },
   beforeUnmount() {
-    this.controls?.stop()
+    clearTimeout(this.loopId)
+    this.stream?.getTracks().forEach(t => t.stop())
+  },
+  methods: {
+    scheduleNextDecode() {
+      this.loopId = setTimeout(() => this.decode(), 300)
+    },
+    decode() {
+      const video = this.$refs.video
+      if (!video || video.videoWidth === 0) {
+        this.scheduleNextDecode()
+        return
+      }
+
+      if (!this.canvas) {
+        this.canvas = document.createElement('canvas')
+        this.canvas.width = video.videoWidth
+        this.canvas.height = video.videoHeight
+        this.ctx = this.canvas.getContext('2d')
+      }
+
+      this.ctx.drawImage(video, 0, 0, this.canvas.width, this.canvas.height)
+
+      try {
+        const result = this.reader.decodeFromCanvas(this.canvas)
+        if (result) {
+          this.$emit('scan', result.getText())
+          return
+        }
+      } catch {
+        // NotFoundException is expected — just keep looping
+      }
+
+      this.scheduleNextDecode()
+    },
   },
 }
 </script>
