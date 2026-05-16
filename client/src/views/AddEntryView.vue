@@ -81,12 +81,31 @@
               </button>
             </div>
 
-            <input
-              class="item-input"
-              v-model="newItemName"
-              :placeholder="addingItemType === 'food' ? 'z.B. Porridge' : 'z.B. Kaffee'"
-              ref="itemNameInput"
-            />
+            <div class="item-input-row">
+              <input
+                class="item-input"
+                v-model="newItemName"
+                :placeholder="addingItemType === 'food' ? 'z.B. Porridge' : 'z.B. Kaffee'"
+                ref="itemNameInput"
+              />
+              <button type="button" class="scan-btn" @click="showScanner = true" title="Barcode scannen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="2" y="2" width="5" height="5" rx="1"/><rect x="17" y="2" width="5" height="5" rx="1"/>
+                  <rect x="2" y="17" width="5" height="5" rx="1"/>
+                  <line x1="2" y1="9" x2="2" y2="10"/><line x1="7" y1="9" x2="7" y2="10"/>
+                  <line x1="12" y1="9" x2="12" y2="9.5"/>
+                  <line x1="9" y1="2" x2="9" y2="7"/><line x1="9" y1="12" x2="9" y2="12.5"/>
+                  <line x1="12" y1="2" x2="12" y2="7"/>
+                  <line x1="15" y1="9" x2="15" y2="12"/><line x1="17" y1="9" x2="17" y2="10"/>
+                  <line x1="22" y1="9" x2="22" y2="12"/><line x1="12" y1="15" x2="12" y2="22"/>
+                  <line x1="17" y1="14" x2="17" y2="14.5"/><line x1="22" y1="14" x2="22" y2="17"/>
+                  <line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="22" x2="22" y2="22"/>
+                  <line x1="17" y1="17" x2="17" y2="22"/>
+                </svg>
+              </button>
+            </div>
+            <p class="scan-status loading" v-if="scanLoading">Produktdaten werden geladen…</p>
+            <p class="scan-status error" v-if="scanError">{{ scanError }}</p>
 
             <!-- Zutaten -->
             <div class="ingredients-section">
@@ -230,12 +249,17 @@
 
       </form>
     </div>
+
+    <BarcodeScanner v-if="showScanner" @scan="handleScan" @close="showScanner = false" />
   </div>
 </template>
 
 <script>
+import BarcodeScanner from '../components/BarcodeScanner.vue'
+
 export default {
   name: 'AddEntryView',
+  components: { BarcodeScanner },
   data() {
     return {
       type: 'meal',
@@ -263,6 +287,10 @@ export default {
       stoolMucus:   false,
       stoolUrgency: false,
       stoolPain:    'none',
+      // Barcode-Scanner
+      showScanner: false,
+      scanLoading: false,
+      scanError: '',
     }
   },
   computed: {
@@ -361,6 +389,38 @@ export default {
     },
     removeItem(idx) {
       this.items.splice(idx, 1)
+    },
+    async handleScan(barcode) {
+      this.showScanner = false
+      this.scanLoading = true
+      this.scanError = ''
+      try {
+        const res = await fetch(
+          `https://world.openfoodfacts.org/api/v2/product/${barcode}.json?fields=product_name,product_name_de,ingredients_text,ingredients`
+        )
+        const data = await res.json()
+        if (data.status !== 1) {
+          this.scanError = 'Produkt nicht gefunden (Barcode: ' + barcode + ')'
+          return
+        }
+        const p = data.product
+        this.newItemName = p.product_name_de || p.product_name || ''
+
+        if (p.ingredients && p.ingredients.length > 0) {
+          this.newItemIngredients = p.ingredients
+            .map(i => i.text?.replace(/_/g, '').trim())
+            .filter(s => s && s.length > 1)
+        } else if (p.ingredients_text) {
+          this.newItemIngredients = p.ingredients_text
+            .split(/,\s*/)
+            .map(s => s.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\d+[,.]?\d*\s*%/g, '').trim())
+            .filter(s => s.length > 1)
+        }
+      } catch {
+        this.scanError = 'Netzwerkfehler beim Laden der Produktdaten'
+      } finally {
+        this.scanLoading = false
+      }
     },
     async loadEntry() {
       try {
@@ -687,6 +747,49 @@ export default {
   display: flex;
   gap: 0.4rem;
 }
+
+.item-input-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.item-input-row .item-input {
+  flex: 1;
+}
+
+.scan-btn {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  padding: 0;
+}
+
+.scan-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+.scan-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.scan-status {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.scan-status.loading { color: rgba(255,255,255,0.55); }
+.scan-status.error   { color: #fca5a5; }
 
 .add-ing-btn {
   padding: 0.6rem 0.9rem;
